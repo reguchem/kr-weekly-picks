@@ -1,8 +1,8 @@
 KRX 로그인 시도...
   로그인 ID: minchaa
 KRX 로그인 완료.
-  로그인 시간: 2026-11-18 13:59:12
-  만료 시간: 2026-11-18 14:59:12
+  로그인 시간: 2026-11-18 14:27:18
+  만료 시간: 2026-11-18 15:27:18
 [krx] 계정 설정 있음 · 수급 조회 성공 · PER/PBR 조회 성공
 [universe] _universe_naver_api: 645 종목
 [prices] 300/300 종목, 3000 거래일
@@ -19,6 +19,7 @@ Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length 
 Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
 Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
 Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
 Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
 Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
 Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
@@ -1865,69 +1866,7 @@ Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecti
 Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
 Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
 Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Expecting value: line 13 column 1 (char 25)
-[flow] 29/300 종목
+[flow] 39/300 종목
 Error occurred in get_market_fundamental_by_ticker: Expecting value: line 13 column 1 (char 25)
 [fundamental] 2014-12-26 실패: KeyError("None of [Index(['BPS', 'PER', 'PBR', 'EPS', 'DIV', 'DPS'], dtype='object')] are in the [columns]")
 Error occurred in get_market_fundamental_by_ticker: Expecting value: line 13 column 1 (char 25)
@@ -1944,11 +1883,11 @@ Error occurred in get_market_fundamental_by_ticker: Expecting value: line 13 col
 [prices] 80/80 종목, 3000 거래일
 [점검] 2026-11-17 KOSPI 4,968 / 120일선 6,893 · ETF 시세 80개, 거래대금 통과 80, 60일선 위 0, 최종 후보 0
 [점검] 상위 후보: []
-S1 테마·수급 종목 (현행)                평균CAGR +12.8% (요일범위 -0.8%~+31.0%) 샤프 0.48 MDD -62.8% 검증CAGR +0.3% 검증MDD -60.3% 매수/년 88 현금주 0% 화요일 최종 909,326원
-S2 테마·수급 종목 느린교체                평균CAGR +18.6% (요일범위 +6.9%~+40.0%) 샤프 0.60 MDD -65.0% 검증CAGR +8.7% 검증MDD -63.4% 매수/년 65 현금주 0% 화요일 최종 3,390,674원
-S3 S2 + 시장필터(120일선)             평균CAGR +18.6% (요일범위 +8.9%~+36.8%) 샤프 0.67 MDD -50.2% 검증CAGR +21.7% 검증MDD -46.4% 매수/년 44 현금주 42% 화요일 최종 4,753,415원
-C1 복합(가치+저변동+모멘텀)               평균CAGR +7.1% (요일범위 +3.5%~+20.7%) 샤프 0.37 MDD -59.5% 검증CAGR +15.9% 검증MDD -47.3% 매수/년 0 현금주 0% 화요일 최종 1,526,324원
-E1 테마 ETF 순환 4개                 평균CAGR +11.3% (요일범위 +8.7%~+13.5%) 샤프 0.56 MDD -47.5% 검증CAGR +15.0% 검증MDD -43.6% 매수/년 36 현금주 11% 화요일 최종 3,964,965원
+S1 테마·수급 종목 (현행)                평균CAGR +18.3% (요일범위 +0.8%~+31.7%) 샤프 0.60 MDD -63.3% 검증CAGR -0.0% 검증MDD -59.9% 매수/년 87 현금주 0% 화요일 최종 1,087,738원
+S2 테마·수급 종목 느린교체                평균CAGR +24.0% (요일범위 +12.0%~+34.3%) 샤프 0.72 MDD -63.5% 검증CAGR +5.3% 검증MDD -60.9% 매수/년 67 현금주 0% 화요일 최종 3,542,086원
+S3 S2 + 시장필터(120일선)             평균CAGR +21.1% (요일범위 +8.5%~+33.4%) 샤프 0.74 MDD -50.5% 검증CAGR +18.1% 검증MDD -46.9% 매수/년 45 현금주 42% 화요일 최종 2,499,720원
+C1 복합(가치+저변동+모멘텀)               평균CAGR +7.1% (요일범위 +3.5%~+20.6%) 샤프 0.37 MDD -59.5% 검증CAGR +15.9% 검증MDD -47.3% 매수/년 0 현금주 0% 화요일 최종 1,527,624원
+E1 테마 ETF 순환 4개                 평균CAGR +11.4% (요일범위 +9.1%~+13.5%) 샤프 0.56 MDD -47.4% 검증CAGR +15.2% 검증MDD -43.6% 매수/년 36 현금주 11% 화요일 최종 3,964,965원
 E2 테마 ETF 4개 + 시장필터(120일선)      평균CAGR +11.7% (요일범위 +10.8%~+13.7%) 샤프 0.65 MDD -34.2% 검증CAGR +17.6% 검증MDD -33.1% 매수/년 30 현금주 43% 화요일 최종 3,650,455원
-E3 테마 ETF 4개 + 시장필터(200일선)      평균CAGR +9.6% (요일범위 +7.7%~+11.0%) 샤프 0.55 MDD -38.7% 검증CAGR +14.2% 검증MDD -38.7% 매수/년 31 현금주 43% 화요일 최종 3,293,614원
-E4 테마 ETF 3개 + 시장필터(120일선)      평균CAGR +13.3% (요일범위 +11.9%~+14.6%) 샤프 0.69 MDD -33.5% 검증CAGR +21.1% 검증MDD -32.0% 매수/년 26 현금주 43% 화요일 최종 4,077,030원
+E3 테마 ETF 4개 + 시장필터(200일선)      평균CAGR +9.6% (요일범위 +7.8%~+11.0%) 샤프 0.55 MDD -38.8% 검증CAGR +14.2% 검증MDD -38.8% 매수/년 31 현금주 43% 화요일 최종 3,293,614원
+E4 테마 ETF 3개 + 시장필터(120일선)      평균CAGR +13.3% (요일범위 +12.0%~+14.6%) 샤프 0.69 MDD -33.5% 검증CAGR +21.0% 검증MDD -32.0% 매수/년 26 현금주 43% 화요일 최종 4,077,030원
