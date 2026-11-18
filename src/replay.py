@@ -49,7 +49,7 @@ def run(dates):
     for ds in dates:
         d = pd.Timestamp(ds)
         recs = {"weeks": []}
-        M = weekly.build_market(recs, d, refresh_sectors=False)
+        M = weekly.build_market(recs, d, refresh_sectors=True)
         t = M["t"]
         case = {"date": str(t.date()), "market_ok": M["market_ok"], "kospi": M["kospi_now"], "kospi_ma": M["kospi_ma"]}
         variants = [("rule", M["market_ok"])]
@@ -66,6 +66,10 @@ def run(dates):
                     latest[c] = float(o["close"].iloc[-1])
                     case["last_date"] = str(o.index[-1].date())
             rows, total = evaluate(rec, latest)
+            sc_n = len(M2["f"])
+            print(f"[{name}] 업종 분류 {len(M['sectors'])}종목, 점수 대상 {sc_n}, 상위 업종 "
+                  f"{list(M['sector_table'].index[:5]) if len(M['sector_table']) else []}, "
+                  f"ETF 후보 {len(M['E'].scores(t))}")
             case[name] = {"picks": rows, "total": total, "ret": total / C.SEED - 1}
         kc = k["close"]
         k0 = float(kc.loc[:t].iloc[-1])

@@ -53,7 +53,9 @@ def _f(x, nd=4):
 def load_sectors(refresh: bool) -> dict:
     C.CACHE.mkdir(parents=True, exist_ok=True)
     if SECTOR_CACHE.exists() and not refresh:
-        return json.loads(SECTOR_CACHE.read_text())
+        m = json.loads(SECTOR_CACHE.read_text())
+        if m:
+            return m
     m = get_sectors()
     if m:
         SECTOR_CACHE.write_text(json.dumps(m, ensure_ascii=False))
