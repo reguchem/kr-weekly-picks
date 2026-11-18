@@ -186,9 +186,21 @@ def get_fundamentals(date: pd.Timestamp) -> pd.DataFrame | None:
         return _synthetic_fundamentals(date)
     try:
         from pykrx import stock
-        df = stock.get_market_fundamental(date.strftime("%Y%m%d"), market="ALL")
-        if df is None or df.empty:
+        parts = []
+        for mk in ("KOSPI", "KOSDAQ"):          # "ALL"은 빈 결과가 와서 시장별로 조회
+            for k in range(3):
+                try:
+                    x = stock.get_market_fundamental(date.strftime("%Y%m%d"), market=mk)
+                except Exception:
+                    x = None
+                if x is not None and not x.empty and "PER" in x:
+                    parts.append(x)
+                    break
+                time.sleep(2 * (k + 1))
+            time.sleep(0.3)
+        if not parts:
             return None
+        df = pd.concat(parts)
         df.index = df.index.astype(str).str.zfill(6)
         return df[["PER", "PBR"]].replace(0, np.nan)
     except Exception as e:  # noqa
@@ -313,9 +325,16 @@ def get_flow_history(code: str, start: str, end: str) -> pd.DataFrame | None:
         s0, e0 = pd.Timestamp(start), pd.Timestamp(end)
         while s0 <= e0:                      # KRX 조회 기간 제한 대비 2년 단위로 나눠 조회
             s1 = min(s0 + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
-            df = stock.get_market_trading_value_by_date(s0.strftime("%Y%m%d"), s1.strftime("%Y%m%d"), code)
-            if df is not None and not df.empty:
-                parts.append(pd.DataFrame({"foreign": df["외국인합계"], "inst": df["기관합계"]}))
+            for k in range(4):               # KRX가 빈 응답을 주면 잠시 쉬고 재시도
+                try:
+                    df = stock.get_market_trading_value_by_date(s0.strftime("%Y%m%d"), s1.strftime("%Y%m%d"), code)
+                except Exception:
+                    df = None
+                if df is not None and not df.empty and "외국인합계" in df:
+                    parts.append(pd.DataFrame({"foreign": df["외국인합계"], "inst": df["기관합계"]}))
+                    break
+                time.sleep(2 * (k + 1))
+            time.sleep(0.3)
             s0 = s1 + pd.Timedelta(days=1)
         if not parts:
             return None
@@ -358,7 +377,7 @@ def get_flow_recent_naver(code: str, pages: int = 2) -> pd.DataFrame | None:
         return None
 
 
-def get_flow_panel(codes, start: str, end: str, recent_only=False, workers=4):
+def get_flow_panel(codes, start: str, end: str, recent_only=False, workers=None):
     """{'foreign': DataFrame(date×code), 'inst': ...} — 실패 종목은 빠짐"""
     def job(c):
         df = None if recent_only else get_flow_history(c, start, end)
@@ -366,8 +385,15 @@ def get_flow_panel(codes, start: str, end: str, recent_only=False, workers=4):
             df = get_flow_history(c, start, end) if SYNTHETIC else get_flow_recent_naver(c)
         return c, df
 
+    # KRX(pykrx)는 동시 요청에 빈 응답을 주므로 순차 조회, 네이버는 병렬
+    workers = workers or (6 if recent_only else 1)
     with ThreadPoolExecutor(workers) as ex:
-        res = {c: d for c, d in ex.map(job, list(dict.fromkeys(codes))) if d is not None and len(d)}
+        res = {}
+        for i, (c, d) in enumerate(ex.map(job, list(dict.fromkeys(codes)))):
+            if d is not None and len(d):
+                res[c] = d
+            if (i + 1) % 50 == 0:
+                print(f"[flow] {i + 1}/{len(codes)} 처리, 성공 {len(res)}")
     if not res:
         print(f"[flow] 수급 데이터 없음 (마지막 오류: {_FLOW_ERR})")
         return None

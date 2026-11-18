@@ -57,17 +57,26 @@ def load_flow(codes, start, end):
     C.CACHE.mkdir(parents=True, exist_ok=True)
     paths = {k: C.CACHE / f"flow_{k}.csv.gz" for k in ("foreign", "inst")}
     cached = {k: pd.read_csv(p, index_col=0, parse_dates=True) for k, p in paths.items() if p.exists()}
-    fetch_from = start
-    if len(cached) == 2 and len(cached["foreign"]):
-        fetch_from = str((cached["foreign"].index[-1] + pd.Timedelta(days=1)).date())
-    new = get_flow_panel(codes, fetch_from, end)
-    if new is None and len(cached) < 2:
+    have = set(cached["foreign"].columns) if len(cached) == 2 else set()
+    missing = [c for c in codes if c not in have]
+    new_parts = []
+    if missing:                                   # 캐시에 없는 종목: 전체 기간
+        print(f"[flow] 신규 종목 {len(missing)}개 전체 기간 수집")
+        new_parts.append(get_flow_panel(missing, start, end))
+    if have:                                      # 캐시에 있는 종목: 마지막 날짜 이후만
+        last = cached["foreign"].index[-1]
+        if last < pd.Timestamp(end):
+            new_parts.append(get_flow_panel([c for c in codes if c in have],
+                                            str((last + pd.Timedelta(days=1)).date()), end))
+    new_parts = [x for x in new_parts if x is not None]
+    if not new_parts and len(cached) < 2:
         return None
     out = {}
     for k in paths:
-        parts = [x for x in (cached.get(k), new[k] if new else None) if x is not None]
+        parts = [x for x in [cached.get(k)] + [n[k] for n in new_parts] if x is not None]
         df = pd.concat(parts).sort_index()
-        df = df[~df.index.duplicated(keep="last")]
+        df = df.T.groupby(level=0).last().T if df.columns.duplicated().any() else df
+        df = df.groupby(level=0).last()
         df.columns = [str(c).zfill(6) for c in df.columns]
         df.to_csv(paths[k], compression="gzip", float_format="%.0f")
         out[k] = df
