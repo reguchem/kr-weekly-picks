@@ -256,7 +256,9 @@ def select_cost_aware(scores: pd.Series, holdings: list[str], n: int, cal: dict,
 def simulate(schedule: list[tuple[pd.Timestamp, list[str]]], open_: pd.DataFrame,
              close: pd.DataFrame, end=None, execute_at: str = C.EXECUTE_AT, capital: float = C.SEED,
              buy_cost: float = C.BUY_COST, sell_cost: float = C.SELL_COST, etf_codes: set | None = None,
-             etf_buy: float = 0.00065, etf_sell: float = 0.00065):
+             etf_buy: float = 0.00065, etf_sell: float = 0.00065,
+             stop_dates: set | None = None, stop_loss: float = 0.0, stop_daily: bool = False,
+             slots: int | None = None):
     """schedule: [(신호일, 목표 종목들)]
     execute_at="close": 신호일 종가에 매매(시간외 종가) / "next_open": 다음 거래일 시가에 매매.
     capital 원으로 시작, **정수 주식 수**로 매매 (남는 돈은 현금).
@@ -276,11 +278,28 @@ def simulate(schedule: list[tuple[pd.Timestamp, list[str]]], open_: pd.DataFrame
     start = min(sched) if sched else None
     if start is None:
         return pd.Series(dtype=float), trades
+    stopped_pos, stopped_today = {}, set()
     for d in days[days >= start]:
         if d > end:
             break
+        stopped_today = set()
+        # 손절: stop_dates(하락장 신호일)에 편입한 종목이 편입가 대비 stop_loss 이상 하락하면 종가 매도
+        if stop_loss and stopped_pos:
+            cl_d = close.loc[d]
+            if stop_daily or d in sched:
+                for c in [c for c in list(pos) if c in stopped_pos]:
+                    px = cl_d.get(c, np.nan)
+                    if not np.isnan(px) and px <= stopped_pos[c] * (1 - stop_loss):
+                        sh = pos.pop(c)
+                        stopped_pos.pop(c)
+                        cash += sh * px * (1 - (etf_sell if etf_codes and c in etf_codes else sell_cost))
+                        trades.append({"date": d, "signal": d, "code": c, "side": "SELL", "price": float(px),
+                                       "shares": int(sh), "stop": True})
+                        stopped_today.add(c)
         if d in sched:
             sig, target = sched[d]
+            if stopped_today:
+                target = [c for c in target if c not in stopped_today]
             o = close.loc[d] if execute_at == "close" else open_.loc[d]
             # 매도
             for c in [c for c in pos if c not in target]:
@@ -288,6 +307,7 @@ def simulate(schedule: list[tuple[pd.Timestamp, list[str]]], open_: pd.DataFrame
                 if np.isnan(px):
                     continue  # 거래정지 등 → 보유 유지
                 sh = pos.pop(c)
+                stopped_pos.pop(c, None)
                 cash += sh * px * (1 - (etf_sell if etf_codes and c in etf_codes else sell_cost))
                 trades.append({"date": d, "signal": sig, "code": c, "side": "SELL", "price": float(px),
                                "shares": int(sh)})
@@ -295,6 +315,9 @@ def simulate(schedule: list[tuple[pd.Timestamp, list[str]]], open_: pd.DataFrame
             buys = [c for c in target if c not in pos and not np.isnan(o.get(c, np.nan))]
             if buys and cash > 0:
                 per = cash / len(buys)
+                if slots:   # 한 자리 금액 = 평가금액/자리수 (하락장에서 자리 일부만 채우면 나머지는 현금)
+                    val = cash + sum(sh * close_f.loc[d].get(c, 0) for c, sh in pos.items())
+                    per = min(per, val / slots)
                 for c in buys:
                     px = float(o[c])
                     bc = etf_buy if etf_codes and c in etf_codes else buy_cost
@@ -303,6 +326,8 @@ def simulate(schedule: list[tuple[pd.Timestamp, list[str]]], open_: pd.DataFrame
                         continue
                     cash -= sh * px * (1 + bc)
                     pos[c] = sh
+                    if stop_dates is not None and sig in stop_dates:
+                        stopped_pos[c] = px
                     trades.append({"date": d, "signal": sig, "code": c, "side": "BUY", "price": px, "shares": sh})
         cl = close_f.loc[d]
         eq[d] = cash + sum(sh * cl.get(c, 0) for c, sh in pos.items())

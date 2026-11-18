@@ -17,7 +17,13 @@ MAX_PRICE_FRACTION = 0.5     # 주가 ≤ (평가금액/종목수) × 0.5 인 �
 N_PICKS = 3                  # 개별 종목 수
 N_ETFS = 2                   # 테마 ETF 수
 SLOTS = N_PICKS + N_ETFS     # 자금은 5등분 (종목 3 + ETF 2)
-MARKET_MA = 120              # KOSPI가 이 이동평균선 아래면 전부 현금 (0이면 필터 끔)
+MARKET_MA = 120              # KOSPI가 이 이동평균선 아래면 '하락장 모드' (0이면 필터 끔)
+# 하락장 모드: KOSPI 대비 강한 것만, 자리 일부만 채우고, 손절을 짧게
+BEAR_STOCKS = 2              # 하락장 최대 개별 종목 수
+BEAR_ETFS = 1                # 하락장 최대 ETF 수
+BEAR_STOP = 0.07             # 하락장에서 편입한 종목은 편입가 대비 -7%면 손절
+BEAR_RS_STOCK = 0.10         # 3개월 수익률이 KOSPI보다 10%p 이상 높아야 함
+BEAR_RS_ETF = 0.05           # ETF는 5%p 이상
 BUFFER_RANK = 15             # 보유 종목은 순위가 이 안에 있으면 계속 보유 (교체 최소화)
 
 # ── 거래 비용 (편도, 비율) ───────────────────────────────

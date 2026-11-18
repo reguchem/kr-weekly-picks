@@ -21,13 +21,14 @@ class EtfFactors:
         self.ret_21 = c / c.shift(21) - 1
         self.ret_63 = c / c.shift(63) - 1
         self.ma60 = c.rolling(60, min_periods=55).mean()
+        self.ma20 = c.rolling(20, min_periods=18).mean()
         self.high_126 = c.rolling(126, min_periods=100).max()
         self.tv20 = (c * volume.reindex_like(c)).rolling(20, min_periods=15).mean()
         self.hist = c.notna().cumsum()
 
     def table(self, t) -> pd.DataFrame:
         return pd.DataFrame({"close": self.close.loc[t], "r21": self.ret_21.loc[t], "r63": self.ret_63.loc[t],
-                             "ma60": self.ma60.loc[t], "hi": self.high_126.loc[t], "tv": self.tv20.loc[t],
+                             "ma60": self.ma60.loc[t], "ma20": self.ma20.loc[t], "hi": self.high_126.loc[t], "tv": self.tv20.loc[t],
                              "hist": self.hist.loc[t]})
 
     def scores(self, t) -> pd.Series:
@@ -65,3 +66,23 @@ def market_ok(kospi: pd.Series, ma_n, t) -> bool:
     k = kospi.loc[:t]
     ma = k.rolling(ma_n, min_periods=int(ma_n * 0.9)).mean().iloc[-1]
     return True if np.isnan(ma) else bool(k.iloc[-1] >= ma)
+
+
+def kospi_rets(kospi: pd.Series, t):
+    k = kospi.loc[:t]
+    r = lambda n: float(k.iloc[-1] / k.iloc[-1 - n] - 1) if len(k) > n else 0.0
+    return r(21), r(63)
+
+
+def bear_ok_stocks(f: pd.DataFrame, k21: float, k63: float) -> set:
+    """하락장 모드 종목 조건: 20·60일선 위, 3개월 수익률이 KOSPI+10%p 이상, 1개월도 KOSPI보다 강함"""
+    ok = ((f["close"] > f["ma20"]) & (f["close"] > f["ma60"]) &
+          (f["ret_63"] - k63 >= C.BEAR_RS_STOCK) & (f["ret_21"] > k21))
+    return set(f.index[ok.fillna(False)])
+
+
+def bear_ok_etfs(E: EtfFactors, t, k21: float, k63: float) -> set:
+    f = E.table(t)
+    ok = ((f["close"] > f["ma20"]) & (f["close"] > f["ma60"]) &
+          (f["r63"] - k63 >= C.BEAR_RS_ETF) & (f["r21"] > k21) & (f["tv"] >= ETF_MIN_TV))
+    return set(f.index[ok.fillna(False)])

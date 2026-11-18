@@ -13,7 +13,8 @@ import pandas as pd
 from . import config as C
 from .data import get_universe, get_price_panel, get_ohlcv, get_sectors, get_theme_etfs, check_krx_login
 from .backtest import load_flow, load_fundamentals
-from .etf import EtfFactors, etf_select, market_ok, ETF_BUY, ETF_SELL
+from .etf import (EtfFactors, etf_select, market_ok, ETF_BUY, ETF_SELL, kospi_rets, bear_ok_stocks,
+                  bear_ok_etfs)
 from .strategy import Factors, score, select_cost_aware, fit_calibration, simulate, weekly_signal_dates, metrics
 
 KST = timezone(timedelta(hours=9))
@@ -73,40 +74,56 @@ def run():
         scache[key] = (out, fit_calibration(samples))
         return scache[key]
 
-    def stock_sched(strategy, wd, ma, n, slots):
+    def stock_sched(strategy, wd, ma, n, slots, bear=False):
         scored, cal = stock_scored(strategy, wd)
         afford_px = C.SEED / slots * C.MAX_PRICE_FRACTION
-        hold, sched = [], {}
+        hold, sched, bear_dates = [], {}, set()
         for d, sc, new_ok in scored:
-            if not market_ok(kospi, ma, d):
-                hold = []
-            else:
-                aff = set(sc.index[close_s.loc[d].reindex(sc.index) <= afford_px])
+            aff = set(sc.index[close_s.loc[d].reindex(sc.index) <= afford_px])
+            if market_ok(kospi, ma, d):
                 hold, _ = select_cost_aware(sc, hold, n, cal, new_ok, aff)
+            elif bear:
+                k21, k63 = kospi_rets(kospi, d)
+                ok = bear_ok_stocks(fcache[d], k21, k63)
+                hold = [h for h in hold if h in ok]
+                nk = (new_ok & ok) if new_ok is not None else ok
+                hold, _ = select_cost_aware(sc, hold, C.BEAR_STOCKS, cal, nk, aff & ok)
+                bear_dates.add(d)
+            else:
+                hold = []
             sched[d] = list(hold)
-        return sched
+        return sched, bear_dates
 
-    def etf_sched(wd, ma, n, dates):
-        hold, sched = [], {}
+    def etf_sched(wd, ma, n, dates, bear=False):
+        hold, sched, bear_dates = [], {}, set()
         for d in dates:
             if d not in close_e.index:
                 sched[d] = list(hold)
                 continue
-            if not market_ok(kospi, ma, d):
-                hold = []
-            else:
-                sc = E.scores(d)
+            sc = E.scores(d)
+            if market_ok(kospi, ma, d):
                 hold = etf_select(sc, hold, n, n * 2, E, d) if len(sc) else []
+            elif bear:
+                k21, k63 = kospi_rets(kospi, d)
+                ok = bear_ok_etfs(E, d, k21, k63)
+                sc = sc[sc.index.isin(ok)]
+                hold = [h for h in hold if h in ok]
+                hold = etf_select(sc, hold, C.BEAR_ETFS, C.BEAR_ETFS * 2, E, d) if len(sc) else []
+                bear_dates.add(d)
+            else:
+                hold = []
             sched[d] = list(hold)
-        return sched
+        return sched, bear_dates
 
     variants = [
-        ("S3", "종목 3개 (느린교체 + 시장필터)", {"stock": ("theme_flow_slow", 3), "etf": 0, "ma": 120}),
-        ("E4", "테마 ETF 3개 + 시장필터", {"stock": None, "etf": 3, "ma": 120}),
-        ("H0", "종목 3 + ETF 2 (필터 없음)", {"stock": ("theme_flow_slow", 3), "etf": 2, "ma": 0}),
-        ("H1", "종목 3 + ETF 2 + 시장필터(120일선)", {"stock": ("theme_flow_slow", 3), "etf": 2, "ma": 120}),
-        ("H2", "종목 3 + ETF 2 + 시장필터(200일선)", {"stock": ("theme_flow_slow", 3), "etf": 2, "ma": 200}),
-        ("S1", "종목 3개 (현행 테마·수급)", {"stock": ("theme_flow", 3), "etf": 0, "ma": 0}),
+        ("H0", "종목3+ETF2, 시장필터 없음", {"stock": ("theme_flow_slow", 3), "etf": 2, "ma": 0}),
+        ("H1", "종목3+ETF2, 하락장 전부 현금", {"stock": ("theme_flow_slow", 3), "etf": 2, "ma": 120}),
+        ("B1", "종목3+ETF2, 하락장 엄격(주간 손절-7%)", {"stock": ("theme_flow_slow", 3), "etf": 2, "ma": 120,
+                                                  "bear": True, "stop_daily": False}),
+        ("B2", "종목3+ETF2, 하락장 엄격(매일 손절-7%)", {"stock": ("theme_flow_slow", 3), "etf": 2, "ma": 120,
+                                                  "bear": True, "stop_daily": True}),
+        ("S3", "종목 3개, 하락장 전부 현금", {"stock": ("theme_flow_slow", 3), "etf": 0, "ma": 120}),
+        ("E4", "테마 ETF 3개, 하락장 전부 현금", {"stock": None, "etf": 3, "ma": 120}),
     ]
     oc = pd.concat([close_s, close_e], axis=1)
     oo = pd.concat([px["open"], epx["open"]], axis=1)
@@ -117,10 +134,13 @@ def run():
         for wd in range(5):
             slots = (cfg["stock"][1] if cfg["stock"] else 0) + cfg["etf"]
             dates = [d for d in weekly_signal_dates(close_s.index, wd) if d >= t0]
-            ss = stock_sched(cfg["stock"][0], wd, cfg["ma"], cfg["stock"][1], slots) if cfg["stock"] else {}
-            es = etf_sched(wd, cfg["ma"], cfg["etf"], dates) if cfg["etf"] else {}
+            bear = cfg.get("bear", False)
+            ss, b1 = stock_sched(cfg["stock"][0], wd, cfg["ma"], cfg["stock"][1], slots, bear) if cfg["stock"] else ({}, set())
+            es, b2 = etf_sched(wd, cfg["ma"], cfg["etf"], dates, bear) if cfg["etf"] else ({}, set())
             sched = [(d, ss.get(d, []) + es.get(d, [])) for d in dates if d in ss or d in es]
-            eq, trades = simulate(sched, oo, oc, etf_codes=etf_set, etf_buy=ETF_BUY, etf_sell=ETF_SELL)
+            eq, trades = simulate(sched, oo, oc, etf_codes=etf_set, etf_buy=ETF_BUY, etf_sell=ETF_SELL,
+                                  slots=slots, stop_dates=(b1 | b2) if bear else None,
+                                  stop_loss=C.BEAR_STOP if bear else 0.0, stop_daily=cfg.get("stop_daily", False))
             eq = eq[eq.index >= t0]
             if eq.empty:
                 continue
@@ -130,12 +150,14 @@ def run():
                            "mdd": full["mdd"], "oos_cagr": oos.get("cagr"), "oos_mdd": oos.get("mdd"),
                            "bench_cagr": full["bench_cagr"], "oos_bench": oos.get("bench_cagr"),
                            "buys_per_year": buys / max(full["years"], 0.1), "final_krw": float(eq.iloc[-1]),
-                           "cash_weeks": float(np.mean([len(h) == 0 for _, h in sched]))})
+                           "cash_weeks": float(np.mean([len(h) == 0 for _, h in sched])),
+                           "stops_per_year": sum(1 for t in trades if t.get("stop")) / max(full["years"], 0.1)})
             if wd == C.TRADE_WEEKDAY:
                 tue_curves[key] = eq
                 now_picks[key] = [enames.get(c, c) for c in (sched[-1][1] if sched else [])]
         df = pd.DataFrame(per_wd)
-        a = {k: float(df[k].mean()) for k in ("cagr", "sharpe", "mdd", "oos_cagr", "oos_mdd", "buys_per_year", "cash_weeks")}
+        a = {k: float(df[k].mean()) for k in ("cagr", "sharpe", "mdd", "oos_cagr", "oos_mdd", "buys_per_year",
+                                              "cash_weeks", "stops_per_year")}
         results[key] = {"label": label, "weekdays": per_wd, "avg": a,
                         "cagr_min": float(df["cagr"].min()), "cagr_max": float(df["cagr"].max()),
                         "bench_cagr": float(df["bench_cagr"].mean()), "oos_bench": float(df["oos_bench"].mean()),
@@ -143,7 +165,7 @@ def run():
         print(f"{key} {label:28s} 평균CAGR {a['cagr']:+.1%} (요일범위 {results[key]['cagr_min']:+.1%}~"
               f"{results[key]['cagr_max']:+.1%}) 샤프 {a['sharpe']:.2f} MDD {a['mdd']:.1%} "
               f"검증CAGR {a['oos_cagr']:+.1%} 검증MDD {a['oos_mdd']:.1%} 매수/년 {a['buys_per_year']:.0f} "
-              f"현금주 {a['cash_weeks']:.0%} 화요일 최종 {results[key]['tue_final_krw']:,.0f}원")
+              f"전액현금주 {a['cash_weeks']:.0%} 손절/년 {a['stops_per_year']:.1f} 화요일 최종 {results[key]['tue_final_krw']:,.0f}원")
     print(f"[참고] KOSPI 평균CAGR {results['H1']['bench_cagr']:+.1%}, 2022년 이후 {results['H1']['oos_bench']:+.1%}")
     print("[최근 화요일 선정]", now_picks)
 

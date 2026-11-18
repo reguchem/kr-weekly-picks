@@ -172,9 +172,12 @@ function renderThis(recs){
         ${p.ret?.now!=null ? `<dt>추천 후</dt><dd>${pct(p.ret.now)}</dd>` : ''}
       </dl>
     </div>`;
-  if(w.market_ok === false){
+  if(w.mode === 'bear' && w.picks.length){
+    body.innerHTML = '';
+  }
+  if(w.market_ok === false && !w.picks.length){
     const sells = w.sells.map(s=>s.name);
-    body.innerHTML = `<div class="todo" style="font-size:15px"><b>이번 주: 현금 보유</b> — KOSPI ${num(Math.round(w.kospi_level))}가 ${w.market_ma}일 평균선(${num(Math.round(w.kospi_ma))}) 아래에 있어 신규 매수하지 않습니다.${sells.length?`<br>보유 중이던 ${sells.join(', ')}은(는) 편출(매도) 대상입니다.`:''}<div class="note">KOSPI가 평균선 위로 올라오는 첫 화요일에 종목 3개 + 테마 ETF 2개를 다시 추천합니다. 쉬는 동안 현금은 CMA·파킹형 ETF 등에 두는 것을 고려하세요.</div></div>`;
+    body.innerHTML = `<div class="todo" style="font-size:15px"><b>이번 주: 현금 보유</b> — 하락장 모드(KOSPI ${num(Math.round(w.kospi_level))} < ${w.market_ma}일선 ${num(Math.round(w.kospi_ma))})에서 KOSPI보다 뚜렷이 강한 종목·ETF가 없어 신규 매수하지 않습니다.${sells.length?`<br>보유 중이던 ${sells.join(', ')}은(는) 편출(매도) 대상입니다.`:''}<div class="note">KOSPI가 평균선 위로 올라오는 첫 화요일에 종목 3개 + 테마 ETF 2개를 다시 추천합니다. 쉬는 동안 현금은 CMA·파킹형 ETF 등에 두는 것을 고려하세요.</div></div>`;
     return;
   }
   const cards = w.picks.map(p => p.type==='etf' ? etfCard(p) : `
@@ -205,12 +208,13 @@ function renderThis(recs){
       + (holds.length? ` · 유지: ${holds.join(', ')}` : '')
       + `<div class="note">* 예상 1주 수익률(개별 종목) = 같은 점수 순위 구간 종목들의 과거(2015~2021) 다음 1주 평균 수익률. 자금은 5등분(종목 3 + ETF 2)합니다. 보유 종목은 '예상수익 차이 × 4주'가 왕복 거래비용(${(w.round_trip*100).toFixed(2)}%)보다 클 때만 교체합니다. 수량은 평가금액 ${won(w.equity)} 기준 추정입니다.<br>추천 가격은 ${w.signal_date} 종가입니다. 같은 가격으로 매매하려면 당일 15:30~16:00 시간외 종가를 이용하세요(16:00 이후 애프터마켓은 가격이 다를 수 있음). 수익률 계산은 편출 금액을 신규 종목에 균등 배분한 것으로 가정합니다.</div>`
     : `<b>이번 주는 변경 없음</b> — 기존 3종목(${holds.join(', ')}) 유지`;
-  body.innerHTML = `<div class="picks">${cards}</div><div class="todo">${todo}</div>`;
+  const bearNote = w.mode === 'bear' ? `<div class="todo" style="margin:0 0 12px;border-left:3px solid var(--up)"><b>하락장 모드</b> — KOSPI ${num(Math.round(w.kospi_level))}가 ${w.market_ma}일선(${num(Math.round(w.kospi_ma))}) 아래입니다. KOSPI보다 뚜렷이 강한 것만 최대 종목 2 + ETF 1개 추천하고 나머지는 현금으로 둡니다. 하락장에서 편입한 종목은 편입가 대비 -7%면 손절합니다(매일 점검에서 알림).${w.stopped?.length?`<br>손절 편출: ${w.stopped.join(', ')}`:''}</div>` : '';
+  body.innerHTML = bearNote + `<div class="picks">${cards}</div><div class="todo">${todo}</div>`;
 }
 
 function renderWarn(warn){
   const body = $('#warn-body');
-  const mk = warn && warn.kospi_ma ? `<div class="todo" style="margin:0 0 12px">시장 필터: KOSPI ${num(Math.round(warn.kospi))} / ${warn.market_ma}일 평균선 ${num(Math.round(warn.kospi_ma))} → <b>${warn.market_ok?'투자 구간':'현금 구간 (신규 매수 없음)'}</b></div>` : '';
+  const mk = warn && warn.kospi_ma ? `<div class="todo" style="margin:0 0 12px">시장 상태: KOSPI ${num(Math.round(warn.kospi))} / ${warn.market_ma}일 평균선 ${num(Math.round(warn.kospi_ma))} → <b>${warn.market_ok?'일반 모드':'하락장 모드 (KOSPI보다 강한 것만, 손절 -7%)'}</b></div>` : '';
   if(!warn || !warn.items?.length){ body.innerHTML = mk + `<div class="empty">점검할 보유 종목이 없습니다.</div>`; return; }
   const rows = warn.items.map(i => `<tr>
       <td class="l"><span class="lv lv-${i.level}">${i.level}</span></td>
@@ -317,7 +321,7 @@ function renderBT(bt){
 
 (async () => {
   const [recs, perf, bt, st, warn, brief] = await Promise.all(['data/recommendations.json','data/performance.json','data/backtest.json','data/strategy.json','data/warnings.json','data/brief.json'].map(load));
-  $('#meta').textContent = `업데이트 ${perf?.updated_at || recs?.updated_at || '–'} · 개별 종목 3(테마·수급) + 테마 ETF 2 · KOSPI 120일선 시장 필터 · 매주 화요일 장마감 직후 추천(종가 기준) · 보유 종목은 매일 점검`;
+  $('#meta').textContent = `업데이트 ${perf?.updated_at || recs?.updated_at || '–'} · 개별 종목 3(테마·수급) + 테마 ETF 2 · KOSPI 120일선 아래면 하락장 모드 · 매주 화요일 장마감 직후 추천(종가 기준) · 보유 종목은 매일 점검`;
   renderWarn(warn); renderThis(recs); renderBrief(brief, recs); renderPerf(perf, recs); renderHist(recs); renderBT(bt);
 })();
 </script>

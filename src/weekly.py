@@ -20,7 +20,8 @@ import pandas as pd
 from . import config as C
 from .data import (get_universe, get_price_panel, get_ohlcv, get_fundamentals, get_sectors,
                    get_flow_panel, get_theme_etfs, SYNTHETIC)
-from .etf import EtfFactors, etf_select, market_ok, ETF_SELL, ETF_BUY
+from .etf import (EtfFactors, etf_select, market_ok, ETF_SELL, ETF_BUY, kospi_rets, bear_ok_stocks,
+                  bear_ok_etfs)
 from .notify import send_telegram, send_warnings
 from . import llm
 from .strategy import (STRATEGIES, Factors, score, select, select_cost_aware, expected, simulate,
@@ -61,6 +62,16 @@ def load_sectors(refresh: bool) -> dict:
         SECTOR_CACHE.write_text(json.dumps(m, ensure_ascii=False))
         return m
     return json.loads(SECTOR_CACHE.read_text()) if SECTOR_CACHE.exists() else {}
+
+
+def _bear_bought(recs) -> set:
+    """하락장 모드 주에 '신규 편입'된 뒤 계속 보유 중인 종목들"""
+    out = set()
+    for w in recs["weeks"]:
+        for p in w["picks"]:
+            if p.get("action") == "BUY":
+                (out.add if w.get("mode") == "bear" else out.discard)(p["code"])
+    return out
 
 
 def _prev_picks(recs, kind):
@@ -133,22 +144,41 @@ def make_recommendation(recs: dict, M: dict) -> dict | None:
     # 2) 종목당 금액·가격 상한
     equity = (_load(PERF_PATH, {}).get("value") or C.SEED)
     slot = equity / C.SLOTS
+    bear = not M["market_ok"]
+    stopped = []
+    k21, k63 = kospi_rets(M["kospi"], t)
+    n_s, n_e = (C.BEAR_STOCKS, C.BEAR_ETFS) if bear else (C.N_PICKS, C.N_ETFS)
+    ok_s = bear_ok_stocks(f, k21, k63) if bear else None
+    ok_e = bear_ok_etfs(M["E"], t, k21, k63) if bear else None
+    if bear:
+        # 하락장 손절: 하락장 모드에서 편입한 종목이 편입가 대비 -7% 이하면 편출
+        bear_bought = _bear_bought(recs)
+        for h in _load(PERF_PATH, {}).get("holdings", []):
+            if h["code"] in bear_bought and (h.get("ret") or 0) <= -C.BEAR_STOP:
+                stopped.append(h["code"])
+        prev_s = [c for c in prev_s if c in ok_s and c not in stopped]
+        prev_e = [c for c in prev_e if c in ok_e and c not in stopped]
     rank, erank = {}, {}
-    if not M["market_ok"]:
-        stock_picks, etf_picks = [], []                       # 시장 필터: 전부 현금
-    else:
-        stock_picks = []
-        if s is not None and len(s) >= C.N_PICKS:
-            afford = set(s.index[f["close"].reindex(s.index) <= slot * C.MAX_PRICE_FRACTION])
-            if cal and buffer > C.N_PICKS:
-                stock_picks, rank = select_cost_aware(s, prev_s, C.N_PICKS, cal, ctx.get("new_ok"), afford)
-            else:
-                new_ok = afford if ctx.get("new_ok") is None else (ctx["new_ok"] & afford)
-                stock_picks, rank = select(s, prev_s, C.N_PICKS, buffer, new_ok)
-        esc = M["E"].scores(t)
-        erank = {c: i + 1 for i, c in enumerate(esc.index)}
-        eaff = set(esc.index[M["eclose"].loc[t].reindex(esc.index) <= slot * C.MAX_PRICE_FRACTION])
-        etf_picks = etf_select(esc, prev_e, C.N_ETFS, C.N_ETFS * 2, M["E"], t, eaff) if len(esc) else []
+    stock_picks = []
+    if s is not None and len(s):
+        afford = set(s.index[f["close"].reindex(s.index) <= slot * C.MAX_PRICE_FRACTION])
+        new_ok = ctx.get("new_ok")
+        if bear:
+            afford &= ok_s
+            new_ok = ok_s if new_ok is None else (new_ok & ok_s)
+        if cal and buffer > C.N_PICKS:
+            stock_picks, rank = select_cost_aware(s, prev_s, n_s, cal, new_ok, afford)
+        else:
+            nk = afford if new_ok is None else (new_ok & afford)
+            stock_picks, rank = select(s, prev_s, n_s, buffer, nk)
+    esc = M["E"].scores(t)
+    erank = {c: i + 1 for i, c in enumerate(esc.index)}
+    if bear:
+        esc = esc[esc.index.isin(ok_e)]
+    eaff = set(esc.index[M["eclose"].loc[t].reindex(esc.index) <= slot * C.MAX_PRICE_FRACTION])
+    etf_picks = etf_select(esc, prev_e, n_e, n_e * 2, M["E"], t, eaff) if len(esc) else []
+    prev_s = [p["code"] for p in _prev_picks(recs, "stock")]
+    prev_e = [p["code"] for p in _prev_picks(recs, "etf")]
     picks = stock_picks + etf_picks
     holdings = prev_s + prev_e
     n_new = sum(1 for c in picks if c not in holdings)
@@ -157,7 +187,7 @@ def make_recommendation(recs: dict, M: dict) -> dict | None:
     last_px = pd.concat([M["close"].iloc[-1], M["eclose"].loc[t]])
     freed = cash_now + sum((prev_hold.get(c, {}).get("shares") or 0) * float(last_px.get(c, 0) or 0)
                            * (1 - (ETF_SELL if c in prev_e else C.SELL_COST)) for c in holdings if c not in picks)
-    per_new = (freed / n_new) if n_new else 0
+    per_new = min(freed / n_new, equity / C.SLOTS) if n_new else 0   # 한 자리 = 평가금액/5
 
     def shares_for(c, px):
         is_new = c not in holdings
@@ -198,7 +228,8 @@ def make_recommendation(recs: dict, M: dict) -> dict | None:
     rec = {
         "week": _iso_week(t), "signal_date": str(t.date()),
         "strategy": strat, "strategy_label": label + f" + 테마 ETF {C.N_ETFS}개",
-        "market_ok": M["market_ok"], "kospi_level": _f(M["kospi_now"], 2), "kospi_ma": _f(M["kospi_ma"], 2),
+        "mode": "bear" if bear else "normal", "stopped": [nm(c) for c in stopped],
+        "kospi_r63": _f(k63), "market_ok": M["market_ok"], "kospi_level": _f(M["kospi_now"], 2), "kospi_ma": _f(M["kospi_ma"], 2),
         "market_ma": C.MARKET_MA,
         "picks": [detail(c) for c in stock_picks] + [edetail(c) for c in etf_picks],
         "sells": [{"code": c, "name": nm(c), "type": "etf" if c in prev_e else "stock",
@@ -277,6 +308,9 @@ def check_warnings(recs: dict, M: dict) -> dict:
         items.append({"code": c, "name": p["name"], "type": kind, "sector": M["sectors"].get(c) or ("ETF" if kind == "etf" else None),
                       "buy_date": str(bd.date()), "buy": _f(buy, 0), "last": _f(last, 0), "ret": _f(ret), "dd": _f(dd),
                       "signals": sig, "strong": strong})
+    bear_bought = _bear_bought(recs)
+    k21, k63 = kospi_rets(M["kospi"], t)
+    ok_s, ok_e = bear_ok_stocks(M["f"], k21, k63), bear_ok_etfs(E, t, k21, k63)
     news = llm.holdings_news(out["date"], items) if items else None
     for it in items:
         n = (news or {}).get(it["code"])
@@ -285,8 +319,12 @@ def check_warnings(recs: dict, M: dict) -> dict:
             it["strong"] |= n["risk"] >= 2
         it["news"] = n
         if not M["market_ok"]:
-            it["signals"].append(f"시장 필터: KOSPI가 {C.MARKET_MA}일선 아래 (다음 화요일 전량 현금화 대상)")
-            it["strong"] = True
+            if it["code"] in bear_bought and (it["ret"] or 0) <= -C.BEAR_STOP:
+                it["signals"].append(f"손절 기준 도달: 편입가 대비 {it['ret']:.1%} (하락장 손절 -{C.BEAR_STOP:.0%})")
+                it["strong"] = True
+            okset = ok_e if it["type"] == "etf" else ok_s
+            if it["code"] not in okset:
+                it["signals"].append("하락장 조건 미달(KOSPI 대비 강도 부족) — 다음 화요일 편출 대상")
         k = len(it["signals"])
         it["level"] = "경고" if (it.pop("strong") or k >= 2) else ("주의" if k == 1 else "정상")
     out["items"] = items
@@ -357,7 +395,8 @@ def update_performance(recs: dict):
     sched = [(pd.Timestamp(w["signal_date"]), [p["code"] for p in w["picks"]]) for w in weeks]
     etf_codes = {p["code"] for w in weeks for p in w["picks"] if p.get("type") == "etf"} | \
                 {x["code"] for w in weeks for x in w["sells"] if x.get("type") == "etf"}
-    eq, trades = simulate(sched, open_, close, etf_codes=etf_codes, etf_buy=ETF_BUY, etf_sell=ETF_SELL)
+    eq, trades = simulate(sched, open_, close, etf_codes=etf_codes, etf_buy=ETF_BUY, etf_sell=ETF_SELL,
+                          slots=C.SLOTS)
     perf = {"updated_at": datetime.now(KST).strftime("%Y-%m-%d %H:%M"), "last_date": str(last.date()),
             "summary": summary, "empty": eq.empty}
     if not eq.empty:
