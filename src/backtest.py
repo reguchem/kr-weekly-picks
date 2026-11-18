@@ -41,6 +41,7 @@ def load_fundamentals(dates, codes):
         new.append(df)
         if i % 50 == 0:
             print(f"[fundamental] {d.date()} ({i}/{len(dates)})")
+            pd.concat([cache, *new], ignore_index=True).to_csv(FUND_CACHE, index=False, compression="gzip")
     if new:
         cache = pd.concat([cache, *new], ignore_index=True)
         cache.to_csv(FUND_CACHE, index=False, compression="gzip")
@@ -52,35 +53,47 @@ def load_fundamentals(dates, codes):
     return out
 
 
-def load_flow(codes, start, end):
-    """외국인·기관 순매수 이력 (캐시 + 증분 수집)"""
+def load_flow(codes, start, end, batch=40):
+    """외국인·기관 순매수 이력 (캐시 + 증분 수집). batch 종목마다 캐시에 저장해 중단돼도 이어받기 가능"""
     C.CACHE.mkdir(parents=True, exist_ok=True)
     paths = {k: C.CACHE / f"flow_{k}.csv.gz" for k in ("foreign", "inst")}
     cached = {k: pd.read_csv(p, index_col=0, parse_dates=True) for k, p in paths.items() if p.exists()}
+    if len(cached) == 2:
+        for k in cached:
+            cached[k].columns = [str(c).zfill(6) for c in cached[k].columns]
+
+    def merge_save(new):
+        nonlocal cached
+        out = {}
+        for k in paths:
+            parts = [x for x in (cached.get(k), new[k] if new else None) if x is not None]
+            if not parts:
+                return
+            df = pd.concat(parts, axis=0).sort_index()
+            df = df.T.groupby(level=0).last().T if df.columns.duplicated().any() else df
+            df = df.groupby(level=0).last()
+            df.columns = [str(c).zfill(6) for c in df.columns]
+            df.to_csv(paths[k], compression="gzip", float_format="%.0f")
+            out[k] = df
+        cached = out
+
     have = set(cached["foreign"].columns) if len(cached) == 2 else set()
     missing = [c for c in codes if c not in have]
-    new_parts = []
-    if missing:                                   # 캐시에 없는 종목: 전체 기간
-        print(f"[flow] 신규 종목 {len(missing)}개 전체 기간 수집")
-        new_parts.append(get_flow_panel(missing, start, end))
-    if have:                                      # 캐시에 있는 종목: 마지막 날짜 이후만
+    if missing:
+        print(f"[flow] 신규 종목 {len(missing)}개 전체 기간 수집 ({batch}개마다 저장)")
+        for i in range(0, len(missing), batch):
+            new = get_flow_panel(missing[i:i + batch], start, end)
+            if new is None and i == 0 and not have:
+                return None              # 첫 묶음부터 전부 실패 → KRX 문제로 보고 중단
+            if new is not None:
+                merge_save(new)
+    if have and len(cached) == 2:
         last = cached["foreign"].index[-1]
         if last < pd.Timestamp(end):
-            new_parts.append(get_flow_panel([c for c in codes if c in have],
-                                            str((last + pd.Timedelta(days=1)).date()), end))
-    new_parts = [x for x in new_parts if x is not None]
-    if not new_parts and len(cached) < 2:
-        return None
-    out = {}
-    for k in paths:
-        parts = [x for x in [cached.get(k)] + [n[k] for n in new_parts] if x is not None]
-        df = pd.concat(parts).sort_index()
-        df = df.T.groupby(level=0).last().T if df.columns.duplicated().any() else df
-        df = df.groupby(level=0).last()
-        df.columns = [str(c).zfill(6) for c in df.columns]
-        df.to_csv(paths[k], compression="gzip", float_format="%.0f")
-        out[k] = df
-    return out
+            new = get_flow_panel([c for c in codes if c in have], str((last + pd.Timedelta(days=1)).date()), end)
+            if new is not None:
+                merge_save(new)
+    return cached if len(cached) == 2 else None
 
 
 def run():
