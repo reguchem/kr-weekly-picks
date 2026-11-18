@@ -3,326 +3,485 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>주간 추천 (종목 3 + 테마 ETF 2) · 성과 추적</title>
+<title>주간 추천 · 종목 3 + 테마 ETF 2</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
 <style>
 :root{
   color-scheme:light;
-  --bg:#f4f4f2; --surface:#fcfcfb; --line:#e4e3df; --grid:#ecebe7;
+  --bg:#f4f4f2; --surface:#fcfcfb; --sunk:#f0efec; --line:#e4e3df; --grid:#ecebe7;
   --text:#0b0b0b; --text2:#52514e; --muted:#8a8984;
+  --accent:#2a78d6; --accent-bg:#e8f0fb;
   --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300;
   --bench:#8a8984;
-  --up:#d6302f; --down:#2a68c9;          /* 한국식: 상승 빨강, 하락 파랑 */
-  --badge-buy:#fde8e4; --badge-hold:#e6eefb; --badge-sell:#ececec;
+  --up:#d6302f; --down:#2a68c9;
+  --buy-bg:#fde8e4; --hold-bg:#e6eefb; --sell-bg:#ececec;
+  --warn-bg:#fff3d6; --warn:#8a5a00; --bear-bg:#fdecea;
+  --r:12px; --gap:32px;
 }
 @media (prefers-color-scheme:dark){
   :root{
     color-scheme:dark;
-    --bg:#121211; --surface:#1a1a19; --line:#2c2c2a; --grid:#262624;
+    --bg:#121211; --surface:#1a1a19; --sunk:#222220; --line:#2c2c2a; --grid:#262624;
     --text:#f0efec; --text2:#c3c2b7; --muted:#8f8e86;
+    --accent:#3987e5; --accent-bg:#1c2a3f;
     --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#0ca30c;
     --bench:#9a998f; --up:#ff6b66; --down:#6aa3ff;
-    --badge-buy:#4a2320; --badge-hold:#1f2f4a; --badge-sell:#2e2e2c;
+    --buy-bg:#4a2320; --hold-bg:#1f2f4a; --sell-bg:#2e2e2c;
+    --warn-bg:#3d3115; --warn:#f0b84a; --bear-bg:#3a1e1c;
   }
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);
-  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif}
-.wrap{max-width:1080px;margin:0 auto;padding:28px 18px 60px}
-header h1{font-size:24px;margin:0 0 4px}
-header p{margin:0;color:var(--text2);font-size:13px}
-section{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:18px}
-h2{font-size:17px;margin:0 0 4px}
-.sub{color:var(--text2);font-size:13px;margin:0 0 14px}
-.picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
-.card{border:1px solid var(--line);border-radius:10px;padding:14px}
-.card .nm{font-size:17px;font-weight:700}
-.card .cd{color:var(--muted);font-size:12px;margin-left:4px}
-.card dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:10px 0 0;font-size:13px}
-.card dt{color:var(--text2)} .card dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
-.badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;margin-bottom:6px}
-.b-BUY{background:var(--badge-buy);color:var(--up)} .b-HOLD{background:var(--badge-hold);color:var(--down)}
-.b-SELL{background:var(--badge-sell);color:var(--text2)}
-.todo{margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--bg);font-size:14px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
-.kpi{border:1px solid var(--line);border-radius:10px;padding:12px}
-.kpi .l{font-size:12px;color:var(--text2)} .kpi .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
-.kpi .s{font-size:12px;color:var(--muted)}
-.up{color:var(--up)} .down{color:var(--down)}
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:32px 24px 64px}
+.num{font-variant-numeric:tabular-nums}
+.up{color:var(--up)} .down{color:var(--down)} .mut{color:var(--muted)} .t2{color:var(--text2)}
+
+/* 헤더 */
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+header h1{font-size:22px;line-height:1.3;margin:0}
+header .meta{font-size:13px;color:var(--text2);margin-top:4px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:5px 12px;border-radius:99px;white-space:nowrap}
+.chip-normal{background:var(--accent-bg);color:var(--accent)}
+.chip-bear{background:var(--bear-bg);color:var(--up)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+/* 섹션 */
+section{margin-top:var(--gap)}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 12px}
+.sec-h h2{font-size:17px;margin:0}
+.sec-h .aside{font-size:13px;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 24px}
+.empty{color:var(--text2);padding:20px;text-align:center;border:1px dashed var(--line);border-radius:var(--r);background:var(--surface)}
+
+/* 히어로: 이번 주 할 일 */
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px 28px 24px;
+  box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.04)}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.hero h2{font-size:24px;line-height:1.3;margin:0}
+.hero .sub{font-size:14px;color:var(--text2);margin-top:4px}
+.hero .when{text-align:right;font-size:13px;color:var(--text2)}
+.hero .when b{display:block;font-size:15px;color:var(--text)}
+.mode-note{margin-top:16px;padding:12px 16px;border-radius:10px;background:var(--bear-bg);font-size:14px;line-height:1.6}
+.mode-note.normal{background:var(--accent-bg)}
+.hero-body{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:24px;margin-top:20px;align-items:start}
+.actions{display:grid;gap:8px}
+.act{display:grid;grid-template-columns:64px 1fr auto;align-items:center;gap:12px;min-height:60px;padding:10px 16px;border-radius:10px;background:var(--sunk)}
+.side{border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:14px}
+.side div{font-size:12px;color:var(--muted)}
+.side b{display:block;font-size:16px;color:var(--text);margin-top:2px;font-variant-numeric:tabular-nums}
+.side .hint{font-size:12px;color:var(--text2);line-height:1.6;border-top:1px solid var(--line);padding-top:12px}
+.act .tag{font-size:12px;font-weight:700;padding:3px 0;border-radius:6px;text-align:center}
+.tag-BUY{background:var(--buy-bg);color:var(--up)} .tag-SELL{background:var(--sell-bg);color:var(--text2)} .tag-HOLD{background:var(--hold-bg);color:var(--down)}
+.act .nm{font-weight:600}
+.act .nm small{font-weight:400;color:var(--muted);margin-left:6px}
+.act .amt{text-align:right;font-size:14px;white-space:nowrap}
+.act .amt small{display:block;font-size:12px;color:var(--muted)}
+.hero .mode-note{margin-top:0}
+.hero-msgs{display:grid;gap:8px;margin-top:16px}
+.hero-msgs:empty{display:none}
+.alert-line{padding:10px 16px;border-radius:10px;background:var(--warn-bg);color:var(--warn);font-size:14px;font-weight:600}
+.alert-line a{color:inherit}
+
+/* 추천 카드 */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column}
+.card .badges{display:flex;gap:6px;margin-bottom:8px}
+.badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--sunk);color:var(--text2)}
+.badge.BUY{background:var(--buy-bg);color:var(--up)} .badge.HOLD{background:var(--hold-bg);color:var(--down)}
+.card .nm{font-size:16px;font-weight:700;line-height:1.35}
+.card .cd{font-size:12px;color:var(--muted)}
+.card .ctx{font-size:12px;color:var(--text2);margin-top:2px;min-height:18px}
+.kv3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)}
+.kv3 div{font-size:11px;color:var(--muted)}
+.kv3 b{display:block;font-size:15px;color:var(--text);margin-top:2px;font-variant-numeric:tabular-nums;white-space:nowrap}
+details.more{margin-top:auto;padding-top:10px}
+details.more summary{cursor:pointer;font-size:12px;color:var(--text2);list-style:none;user-select:none}
+details.more summary::-webkit-details-marker{display:none}
+details.more summary::before{content:"＋ ";color:var(--muted)}
+details.more[open] summary::before{content:"－ "}
+.kv{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin:8px 0 0;font-size:13px}
+.kv dt{color:var(--text2)} .kv dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+
+/* 표 */
 table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
-th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
-th{color:var(--text2);font-weight:600;background:var(--surface);position:sticky;top:0}
+th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
+th{color:var(--muted);font-weight:600;font-size:12px}
 td.l,th.l{text-align:left}
-tr.sel td{background:var(--badge-hold)}
-.tbl{overflow-x:auto;max-height:560px;overflow-y:auto}
-.chart{position:relative;height:320px}
-.empty{color:var(--text2);padding:18px;text-align:center;border:1px dashed var(--line);border-radius:10px}
-.note{font-size:12px;color:var(--muted);margin-top:10px}
-.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
-.tabs button{border:1px solid var(--line);background:var(--surface);color:var(--text2);border-radius:99px;padding:4px 12px;font-size:13px;cursor:pointer}
+tr:last-child td{border-bottom:0}
+tr.sel td{background:var(--accent-bg)}
+.lv{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.lv-정상{background:var(--sell-bg);color:var(--text2)} .lv-주의{background:var(--warn-bg);color:var(--warn)} .lv-경고{background:var(--buy-bg);color:var(--up)}
+.m-only{display:none}
+.sig{margin:0;padding-left:16px;font-size:13px;color:var(--text2);text-align:left} .sig li{margin:2px 0}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.kpi .l{font-size:12px;color:var(--text2)}
+.kpi .v{font-size:24px;font-weight:700;line-height:1.3;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12px;color:var(--muted);margin-top:2px}
+.chart{position:relative;height:300px}
+
+/* 접기 섹션 */
+details.fold{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+details.fold>summary{cursor:pointer;list-style:none;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary h2{font-size:17px;margin:0}
+details.fold>summary .aside{font-size:13px;color:var(--muted)}
+details.fold>summary::after{content:"펼치기";font-size:12px;color:var(--text2);border:1px solid var(--line);border-radius:99px;padding:3px 10px;white-space:nowrap}
+details.fold[open]>summary::after{content:"접기"}
+details.fold>.body{padding:0 24px 20px}
+
+/* 이력 */
+.wk{border-top:1px solid var(--line)}
+.wk:first-child{border-top:0}
+.wk>summary{cursor:pointer;list-style:none;display:grid;grid-template-columns:110px 1fr auto auto;gap:12px;align-items:center;padding:12px 0}
+.wk>summary::-webkit-details-marker{display:none}
+.wk .names{font-size:13px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wk .r{font-size:14px;text-align:right;min-width:70px}
+.wk .r small{display:block;font-size:11px;color:var(--muted)}
+
+table.hist{table-layout:fixed}
+table.hist th:first-child{width:36%}
+.brief p{margin:0 0 10px;font-size:14px} .brief b{font-weight:700}
+.grid2{display:grid;grid-template-columns:1.2fr 1fr;gap:24px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chipo{border:1px solid var(--line);border-radius:99px;padding:3px 10px;font-size:12px;color:var(--text2)}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:var(--surface);color:var(--text2);border-radius:99px;padding:5px 12px;font-size:13px;cursor:pointer}
 .tabs button.on{background:var(--text);color:var(--surface);border-color:var(--text)}
-footer{margin-top:24px;font-size:12px;color:var(--muted);line-height:1.7}
-.lv{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px}
-.lv-정상{background:var(--badge-sell);color:var(--text2)} .lv-주의{background:#fff3d6;color:#8a5a00} .lv-경고{background:var(--badge-buy);color:var(--up)}
-@media (prefers-color-scheme:dark){.lv-주의{background:#3d3115;color:#f0b84a}}
-.sig{margin:4px 0 0;padding-left:18px;font-size:13px;color:var(--text2)} .sig li{margin:2px 0}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.chip{border:1px solid var(--line);border-radius:99px;padding:3px 10px;font-size:12px;color:var(--text2)}
-.brief p{margin:6px 0} .brief b{color:var(--text)}
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.note{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.6}
+.hscroll{overflow-x:auto}
+footer{margin-top:40px;font-size:12px;color:var(--muted);line-height:1.8}
+footer h3{font-size:13px;color:var(--text2);margin:0 0 6px}
+footer ul{margin:0 0 16px;padding-left:18px}
+
+@media (max-width:900px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .grid2{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  :root{--gap:24px}
+  .wrap{padding:20px 16px 48px}
+  header h1{font-size:20px}
+  .hero{padding:20px 16px 16px;border-radius:14px}
+  .hero h2{font-size:20px}
+  .hero-body{grid-template-columns:1fr;gap:12px;margin-top:16px}
+  .side{grid-template-columns:1fr 1fr;gap:10px 12px;padding:12px}
+  .side .hint{grid-column:1/-1}
+  .act{grid-template-columns:52px 1fr;gap:2px 10px;padding:10px 12px;min-height:0}
+  .act .amt{grid-column:2;text-align:left}
+  .act .amt small{display:inline;margin-left:6px}
+  .panel{padding:16px}
+  details.fold>summary{padding:14px 16px}
+  details.fold>.body{padding:0 16px 16px}
+  .cards{grid-template-columns:1fr}
+  .kpi .v{font-size:20px}
+  .chart{height:240px}
+  /* 표 → 카드형 목록 */
+  table.stack thead{display:none}
+  table.stack tr{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  table.stack tr:last-child{border-bottom:0}
+  table.stack td{border:0;padding:0;text-align:left}
+  table.stack td[data-k]::before{content:attr(data-k) " ";color:var(--muted);font-size:12px}
+  table.stack td.full{grid-column:1/-1}
+  table.stack td.rt{text-align:right}
+  table.stack td.first{grid-column:1/-1;order:-1}
+  table.stack td.lvc{display:none}
+  .m-only{display:inline-block}
+  table.stack td.mobr{grid-column:2;grid-row:1}
+  table.stack td.mob2{font-size:12px;color:var(--text2)}
+  table.stack td.lft{text-align:left}
+  table.hist{table-layout:auto}
+  table.hist tr{grid-template-columns:1fr 1fr 1fr}
+  table.hist td.hm{display:none}
+  table.hist td.full{grid-column:1/-1}
+  .wk>summary{grid-template-columns:1fr auto;gap:2px 12px}
+  .wk .names{grid-column:1/-1;grid-row:2;white-space:normal}
+  .wk .r.k{display:none}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
-  <h1>주간 추천 · 성과 추적</h1>
-  <p id="meta">불러오는 중…</p>
+  <div>
+    <h1>주간 추천 · 종목 3 + 테마 ETF 2</h1>
+    <div class="meta" id="meta">불러오는 중…</div>
+  </div>
+  <span id="mode-chip"></span>
 </header>
 
+<div id="hero"></div>
+
+<section id="sec-cards">
+  <div class="sec-h"><h2>추천 종목 상세</h2><span class="aside" id="cards-aside"></span></div>
+  <div id="cards"></div>
+</section>
+
 <section id="sec-warn">
-  <h2>보유 종목 점검 <span style="font-weight:400;font-size:13px;color:var(--text2)">매일 장마감 후</span></h2>
-  <p class="sub">하락 위험 신호를 정보로 알려드립니다 · 매도 여부는 직접 판단하세요 (전략상 정기 교체는 화요일)</p>
-  <div id="warn-body"></div>
-</section>
-
-<section id="sec-this">
-  <h2>이번 주 추천 <span style="font-weight:400;font-size:13px;color:var(--text2)">개별 종목 3 + 테마 ETF 2</span></h2>
-  <p class="sub" id="this-sub"></p>
-  <div id="this-body"></div>
+  <div class="sec-h"><h2>보유 종목 점검</h2><span class="aside" id="warn-aside">매일 장마감 후</span></div>
+  <div id="warn"></div>
 </section>
 
 <section>
-  <h2>시장 브리핑과 업종 흐름</h2>
-  <p class="sub" id="brief-sub">외국인 수급 · 국내 경제 · 세계 정세 (Claude가 매주 화요일 뉴스 검색으로 작성) · 정량 업종 강도 순위</p>
-  <div id="brief-body"></div>
+  <div class="sec-h"><h2>내 성과</h2><span class="aside">시드 100만원 · 추천대로 매매 가정 · 비용 포함</span></div>
+  <div id="perf"></div>
 </section>
 
 <section>
-  <h2>추천대로 매매했다면</h2>
-  <p class="sub">시드 100만원을 5등분(종목 3 + ETF 2)해 매주 화요일 추천일 종가에 교체했다고 가정 · 정수 주식 · 수수료·거래세 포함 · KOSPI와 비교</p>
-  <div id="perf-body"></div>
+  <div class="sec-h"><h2>시장 흐름</h2><span class="aside" id="brief-aside"></span></div>
+  <div id="market"></div>
 </section>
 
 <section>
-  <h2>주간 추천 이력과 기간별 수익률</h2>
-  <p class="sub">추천일 종가 대비 수익률 · 비용 제외 · 괄호는 같은 기간 KOSPI</p>
-  <div id="hist-body"></div>
+  <details class="fold" id="hist-fold">
+    <summary><div><h2>추천 이력</h2><span class="aside">주별 3~5종목 평균 수익률 · 비용 제외</span></div></summary>
+    <div class="body" id="hist"></div>
+  </details>
 </section>
 
 <section>
-  <h2>전략 백테스트 비교</h2>
-  <p class="sub" id="bt-sub"></p>
-  <div id="bt-body"></div>
+  <details class="fold" id="bt-fold">
+    <summary><div><h2>전략 검증 (백테스트)</h2><span class="aside" id="bt-aside"></span></div></summary>
+    <div class="body" id="bt"></div>
+  </details>
 </section>
 
 <footer>
-  본 페이지는 정량 규칙과 AI 뉴스 분석에 따른 자동 산출 정보이며 투자 권유가 아닙니다. 매매 결정과 실행은 본인이 합니다. 과거 성과(백테스트 포함)는 미래 수익을 보장하지 않습니다.
-  백테스트 유니버스는 현재 시가총액 상위 종목 기준이라 상장폐지 종목이 빠진 생존편향이 있어 실제보다 성과가 좋게 나올 수 있습니다.
-  투자 판단과 책임은 본인에게 있습니다.
+  <h3>읽는 법</h3>
+  <ul>
+    <li>추천은 매주 화요일 장마감(15:30) 종가 기준입니다. 같은 가격으로 매매하려면 당일 15:30~16:00 <b>시간외 종가</b>를 이용하세요. 16:00 이후 애프터마켓은 가격이 다를 수 있습니다.</li>
+    <li>자금은 5등분(종목 3 + ETF 2)합니다. KOSPI가 120일 평균선 아래면 <b>하락장 모드</b>: KOSPI보다 뚜렷이 강한 것만 최대 종목 2 + ETF 1, 나머지 현금, 편입가 -7% 손절.</li>
+    <li>예상 1주 수익률은 같은 점수 순위 구간 종목들의 과거(2015~2021) 다음 1주 평균입니다. 보유 종목은 (예상수익 차이 × 4주)가 왕복 거래비용보다 클 때만 교체합니다.</li>
+    <li>수익률 색: 상승 빨강, 하락 파랑.</li>
+  </ul>
+  <h3>유의사항</h3>
+  본 페이지는 정량 규칙과 AI 뉴스 분석에 따른 자동 산출 정보이며 투자 권유가 아닙니다. 매매 결정과 실행은 본인이 합니다.
+  백테스트는 현재 시가총액 상위 종목·현재 업종 분류 기준이라 생존편향이 있어 실제보다 좋게 나올 수 있으며, 과거 성과는 미래 수익을 보장하지 않습니다.
 </footer>
 </div>
 
 <script>
 const $ = s => document.querySelector(s);
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-const pct = (x, d=1) => x==null ? '–' : `<span class="${x>0?'up':x<0?'down':''}">${x>0?'+':''}${(x*100).toFixed(d)}%</span>`;
-const pctPlain = (x, d=1) => x==null ? '–' : `${x>0?'+':''}${(x*100).toFixed(d)}%`;
-const num = x => x==null ? '–' : Number(x).toLocaleString('ko-KR');
-const f2 = x => x==null ? '–' : Number(x).toFixed(2);
+const sign = x => x>0?'+':'';
+const pct = (x, d=1) => x==null ? '–' : `<span class="num ${x>0?'up':x<0?'down':''}">${sign(x)}${(x*100).toFixed(d)}%</span>`;
+const pctP = (x, d=1) => x==null ? '–' : `${sign(x)}${(x*100).toFixed(d)}%`;
+const num = x => x==null ? '–' : Math.round(x).toLocaleString('ko-KR');
 const won = x => x==null ? '–' : Math.round(x).toLocaleString('ko-KR') + '원';
-const ACT = {BUY:'신규 매수', HOLD:'계속 보유', SELL:'매도'};
+const manwon = x => x==null ? '–' : (Math.round(x/1000)/10).toLocaleString('ko-KR') + '만원';
+const f2 = x => x==null ? '–' : Number(x).toFixed(2);
 async function load(p){ try{ const r = await fetch(p+'?t='+Date.now()); return r.ok ? r.json() : null; }catch(e){ return null; } }
+function nextTuesday(fromStr){
+  const d = fromStr ? new Date(fromStr+'T00:00:00') : new Date();
+  const k = new Date(d); k.setDate(d.getDate() + ((2 - d.getDay() + 7) % 7 || 7));
+  return `${k.getMonth()+1}/${k.getDate()}(화)`;
+}
+const md = s => s ? `${+s.slice(5,7)}/${+s.slice(8,10)}` : '';
 
-function lineChart(el, labels, sets, {log=false, pctAxis=true}={}){
-  const grid = css('--grid'), t2 = css('--text2');
-  return new Chart(el, {
-    type:'line',
+function lineChart(el, labels, sets, {log=false}={}){
+  const t2 = css('--text2'), grid = css('--grid');
+  return new Chart(el, {type:'line',
     data:{labels, datasets: sets.map(s => ({label:s.label, data:s.data, borderColor:s.color, backgroundColor:s.color,
       borderWidth:s.width||2, pointRadius:0, pointHoverRadius:4, borderDash:s.dash||[], tension:0, spanGaps:true, hidden:!!s.hidden}))},
-    options:{responsive:true, maintainAspectRatio:false, animation:false,
-      interaction:{mode:'index', intersect:false},
-      plugins:{legend:{labels:{color:t2, boxWidth:14, boxHeight:2}},
-        tooltip:{callbacks:{label: c => `${c.dataset.label}: ${pctPlain(c.parsed.y-1)}`}}},
-      scales:{
-        x:{ticks:{color:t2, maxTicksLimit:8, autoSkip:true}, grid:{display:false}},
-        y:{type: log?'logarithmic':'linear', ticks:{color:t2, callback:v => pctAxis ? pctPlain(v-1,0) : v}, grid:{color:grid}}
-      }}
-  });
+    options:{responsive:true, maintainAspectRatio:false, animation:false, interaction:{mode:'index', intersect:false},
+      plugins:{legend:{position:'top', align:'start', labels:{color:t2, boxWidth:14, boxHeight:2, padding:12}},
+        tooltip:{callbacks:{label: c => `${c.dataset.label}: ${pctP(c.parsed.y-1)}`}}},
+      scales:{x:{ticks:{color:t2, maxTicksLimit:innerWidth<640?4:7, autoSkip:true, maxRotation:0,
+                callback(v){ const l = this.getLabelForValue(v); return l && l.length===10 ? `${l.slice(2,4)}.${l.slice(5,7)}.${l.slice(8)}` : l; }}, grid:{display:false}},
+              y:{type: log?'logarithmic':'linear', ticks:{color:t2, maxTicksLimit:6, callback:v => pctP(v-1,0)}, grid:{color:grid}}}}});
 }
 
-function renderThis(recs){
-  const body = $('#this-body');
+/* ── 히어로: 이번 주 할 일 ── */
+function renderHero(recs, warn, perf){
+  const el = $('#hero');
   const w = recs?.weeks?.at(-1);
-  if(!w){ body.innerHTML = `<div class="empty">아직 추천이 없습니다. GitHub Actions의 <b>weekly</b> 워크플로를 실행하면 생성됩니다.</div>`; return; }
-  $('#this-sub').textContent = `${w.signal_date} 장마감(종가) 기준 · 전략: ${w.strategy_label}${w.llm_used ? ' · 뉴스·정세 보정 반영' : ''}`;
-  const ACTL = {BUY:'신규 편입', HOLD:'계속 보유'};
-  const etfCard = p => `
-    <div class="card">
-      <span class="badge b-${p.action}">${ACTL[p.action]}</span> <span class="badge" style="background:var(--bg);color:var(--text2)">테마 ETF</span>
-      <div><span class="nm">${p.name}</span><span class="cd">${p.code}</span></div>
-      <div style="font-size:12px;color:var(--text2);margin-top:2px">테마 강도 ${p.rank ?? '–'}위</div>
-      <div style="margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--bg);font-size:13px">
-        <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">${p.action==='BUY'?'편입 예상 수량':'보유 수량'}</span><b>${p.shares==null?'–':p.shares+'주'} ${p.amount?'· '+won(p.amount):''}</b></div>
+  const bearNow = warn && warn.market_ok === false;
+  $('#mode-chip').innerHTML = warn?.kospi_ma ? `<span class="chip ${bearNow?'chip-bear':'chip-normal'}" title="KOSPI ${num(warn.kospi)} / 120일선 ${num(warn.kospi_ma)}"><span class="dot"></span>오늘 시장 · ${bearNow?'하락장 모드':'일반 모드'}</span>` : '';
+  if(!w){ el.innerHTML = `<div class="hero"><h2>아직 추천이 없습니다</h2><div class="sub">첫 추천은 ${nextTuesday()} 장마감 직후에 나옵니다.</div></div>`; return; }
+  const bear = w.mode === 'bear';
+  const buys = w.picks.filter(p=>p.action==='BUY'), holds = w.picks.filter(p=>p.action==='HOLD'), sells = w.sells||[];
+  const changed = buys.length || sells.length;
+  const title = !w.picks.length ? '이번 주는 현금 보유' : changed ? `${sells.length?`${sells.length}개 팔고 `:''}${buys.length}개 사기` : '이번 주는 그대로 유지';
+  const row = (tag, label, p, right) => `<div class="act"><span class="tag tag-${tag}">${label}</span>
+      <div class="nm">${p.name}<small>${p.type==='etf'?'ETF':(p.sector||'')}</small></div><div class="amt num">${right}</div></div>`;
+  const acts = [
+    ...sells.map(s => row('SELL','매도', s, `<span class="mut">전량</span>`)),
+    ...buys.map(p => row('BUY','매수', p, `${p.shares??'–'}주 · ${manwon(p.amount)}<small>추천가 ${num(p.close)}원</small>`)),
+    ...holds.map(p => row('HOLD','유지', p, `${p.shares??'–'}주 보유${p.ret?.now!=null?`<small>추천 후 ${pctP(p.ret.now)}</small>`:''}`)),
+  ].join('');
+  const invested = w.picks.reduce((a,p)=>a+(p.amount||0),0);
+  const cashLeft = w.equity ? Math.max(0, w.equity - invested) : null;
+  const modeNote = bear
+    ? `<div class="mode-note"><b>이번 주 하락장 모드</b> · KOSPI ${num(w.kospi_level)}가 ${w.market_ma}일 평균선(${num(w.kospi_ma)}) 아래입니다. KOSPI보다 뚜렷이 강한 것만 최대 종목 2 + ETF 1개, 나머지는 현금으로 둡니다. 하락장에서 산 종목은 -7%면 손절합니다.${w.stopped?.length?`<br>손절 편출: ${w.stopped.join(', ')}`:''}</div>` : '';
+  const flagged = (warn?.items||[]).filter(i=>i.level!=='정상');
+  const alert = flagged.length ? `<div class="alert-line">보유 점검 · ${flagged.map(i=>`${i.name} ${i.level}`).join(', ')} — <a href="#sec-warn">신호 보기</a></div>` : '';
+  const shift = warn && w.market_ok !== undefined && warn.market_ok !== w.market_ok
+    ? `<div class="note">※ 오늘(${md(warn.date)}) 기준으로는 ${warn.market_ok?'일반 모드':'하락장 모드'}입니다. 다음 추천(${nextTuesday(warn.date)})부터 반영됩니다.</div>` : '';
+  el.innerHTML = `<div class="hero">
+    <h2>${title}</h2>
+    <div class="sub">${md(w.signal_date)}(화) 장마감 종가 기준${w.llm_used?' · 뉴스·정세 보정 반영':''}</div>
+    <div class="hero-msgs">${modeNote}${alert}</div>
+    <div class="hero-body">
+      ${acts ? `<div class="actions">${acts}</div>` : `<div class="mode-note">조건을 만족하는 종목·ETF가 없어 이번 주는 매수하지 않습니다. 현금은 CMA·파킹형 ETF 등에 두는 것을 고려하세요.</div>`}
+      <div class="side">
+        <div>평가금액<b>${won(w.equity)}</b></div>
+        <div>매매 후 현금<b>${cashLeft!=null?'약 '+manwon(w.picks.length?cashLeft:w.equity):'–'}</b></div>
+        <div>다음 추천<b>${nextTuesday(w.signal_date)} 15:40경</b></div>
+        <div class="hint">15:30~16:00 <b style="display:inline;font-size:12px">시간외 종가</b>로 주문하면 추천가와 같은 가격에 체결됩니다.</div>
       </div>
-      <dl>
-        <dt>추천일 종가</dt><dd>${num(p.close)}원</dd>
-        <dt>1개월 / 3개월</dt><dd>${pct(p.ret_21)} / ${pct(p.ret_63)}</dd>
-        <dt>6개월 고가 대비</dt><dd>${p.near_high==null?'–':(p.near_high*100).toFixed(0)+'%'}</dd>
-        <dt>매도 시 거래세</dt><dd>없음</dd>
-        ${p.ret?.now!=null ? `<dt>추천 후</dt><dd>${pct(p.ret.now)}</dd>` : ''}
-      </dl>
-    </div>`;
-  if(w.mode === 'bear' && w.picks.length){
-    body.innerHTML = '';
-  }
-  if(w.market_ok === false && !w.picks.length){
-    const sells = w.sells.map(s=>s.name);
-    body.innerHTML = `<div class="todo" style="font-size:15px"><b>이번 주: 현금 보유</b> — 하락장 모드(KOSPI ${num(Math.round(w.kospi_level))} < ${w.market_ma}일선 ${num(Math.round(w.kospi_ma))})에서 KOSPI보다 뚜렷이 강한 종목·ETF가 없어 신규 매수하지 않습니다.${sells.length?`<br>보유 중이던 ${sells.join(', ')}은(는) 편출(매도) 대상입니다.`:''}<div class="note">KOSPI가 평균선 위로 올라오는 첫 화요일에 종목 3개 + 테마 ETF 2개를 다시 추천합니다. 쉬는 동안 현금은 CMA·파킹형 ETF 등에 두는 것을 고려하세요.</div></div>`;
-    return;
-  }
-  const cards = w.picks.map(p => p.type==='etf' ? etfCard(p) : `
-    <div class="card">
-      <span class="badge b-${p.action}">${ACTL[p.action]}</span> <span class="badge" style="background:var(--bg);color:var(--text2)">종목</span>
-      <div><span class="nm">${p.name}</span><span class="cd">${p.code}</span></div>
-      <div style="font-size:12px;color:var(--text2);margin-top:2px">${p.sector ? `${p.sector} · 업종 강도 ${p.sector_rank ?? '–'}위` : ''}</div>
-      <div style="margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--bg);font-size:13px">
-        <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">예상 1주 수익률<sup>*</sup></span><b>${p.exp_week==null?'–':pctPlain(p.exp_week,2)}</b></div>
-        <div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">${p.action==='BUY'?'편입 예상 수량':'보유 수량'}</span><b>${p.shares==null?'–':p.shares+'주'} ${p.amount?'· '+won(p.amount):''}</b></div>
-      </div>
-      <dl>
-        <dt>추천일 종가</dt><dd>${num(p.close)}원</dd>
-        <dt>1개월 / 3개월</dt><dd>${pct(p.ret_21)} / ${pct(p.ret_63)}</dd>
-        <dt>52주 고가 대비</dt><dd>${p.near_high==null?'–':(p.near_high*100).toFixed(0)+'%'}</dd>
-        <dt>거래대금 증가</dt><dd>${p.tv_ratio==null?'–':p.tv_ratio.toFixed(2)+'배'}</dd>
-        <dt>외국인 20일 순매수</dt><dd>${p.flow_f==null?'–':pct(p.flow_f)}</dd>
-        <dt>기관 20일 순매수</dt><dd>${p.flow_i==null?'–':pct(p.flow_i)}</dd>
-        <dt>PER / PBR</dt><dd>${f2(p.per)} / ${f2(p.pbr)}</dd>
-        ${p.ret?.now!=null ? `<dt>추천 후</dt><dd>${pct(p.ret.now)}</dd>` : ''}
-      </dl>
-    </div>`).join('');
-  const buys = w.picks.filter(p=>p.action==='BUY').map(p=>p.name);
-  const holds = w.picks.filter(p=>p.action==='HOLD').map(p=>p.name);
-  const sells = w.sells.map(s=>s.name);
-  const todo = (buys.length||sells.length)
-    ? `<b>이번 주 변경</b> — ` + (sells.length? `편출: ${sells.join(', ')} · ` : '') + (buys.length? `신규 편입: ${buys.join(', ')}` : '')
-      + (holds.length? ` · 유지: ${holds.join(', ')}` : '')
-      + `<div class="note">* 예상 1주 수익률(개별 종목) = 같은 점수 순위 구간 종목들의 과거(2015~2021) 다음 1주 평균 수익률. 자금은 5등분(종목 3 + ETF 2)합니다. 보유 종목은 '예상수익 차이 × 4주'가 왕복 거래비용(${(w.round_trip*100).toFixed(2)}%)보다 클 때만 교체합니다. 수량은 평가금액 ${won(w.equity)} 기준 추정입니다.<br>추천 가격은 ${w.signal_date} 종가입니다. 같은 가격으로 매매하려면 당일 15:30~16:00 시간외 종가를 이용하세요(16:00 이후 애프터마켓은 가격이 다를 수 있음). 수익률 계산은 편출 금액을 신규 종목에 균등 배분한 것으로 가정합니다.</div>`
-    : `<b>이번 주는 변경 없음</b> — 기존 3종목(${holds.join(', ')}) 유지`;
-  const bearNote = w.mode === 'bear' ? `<div class="todo" style="margin:0 0 12px;border-left:3px solid var(--up)"><b>하락장 모드</b> — KOSPI ${num(Math.round(w.kospi_level))}가 ${w.market_ma}일선(${num(Math.round(w.kospi_ma))}) 아래입니다. KOSPI보다 뚜렷이 강한 것만 최대 종목 2 + ETF 1개 추천하고 나머지는 현금으로 둡니다. 하락장에서 편입한 종목은 편입가 대비 -7%면 손절합니다(매일 점검에서 알림).${w.stopped?.length?`<br>손절 편출: ${w.stopped.join(', ')}`:''}</div>` : '';
-  body.innerHTML = bearNote + `<div class="picks">${cards}</div><div class="todo">${todo}</div>`;
-}
-
-function renderWarn(warn){
-  const body = $('#warn-body');
-  const mk = warn && warn.kospi_ma ? `<div class="todo" style="margin:0 0 12px">시장 상태: KOSPI ${num(Math.round(warn.kospi))} / ${warn.market_ma}일 평균선 ${num(Math.round(warn.kospi_ma))} → <b>${warn.market_ok?'일반 모드':'하락장 모드 (KOSPI보다 강한 것만, 손절 -7%)'}</b></div>` : '';
-  if(!warn || !warn.items?.length){ body.innerHTML = mk + `<div class="empty">점검할 보유 종목이 없습니다.</div>`; return; }
-  const rows = warn.items.map(i => `<tr>
-      <td class="l"><span class="lv lv-${i.level}">${i.level}</span></td>
-      <td class="l"><b>${i.name}</b> <span style="color:var(--muted)">${i.code}</span><br><span style="font-size:12px;color:var(--text2)">${i.sector||''} · ${i.buy_date} 편입</span></td>
-      <td>${num(i.last)}</td><td>${pct(i.ret)}</td><td>${pct(i.dd)}</td>
-      <td class="l" style="white-space:normal;min-width:240px">${i.signals.length ? `<ul class="sig">${i.signals.map(x=>`<li>${x}</li>`).join('')}</ul>` : '<span style="color:var(--muted)">특이 신호 없음</span>'}</td></tr>`).join('');
-  const hist = (warn.history||[]).slice(-8).reverse();
-  body.innerHTML = mk + `<div class="tbl"><table>
-      <tr><th class="l">상태</th><th class="l">종목</th><th>현재가</th><th>편입 후</th><th>보유 중 고점 대비</th><th class="l">신호</th></tr>${rows}</table></div>
-    <p class="note">${warn.date} 종가 기준 · 종목 신호: 20일선 이탈, 고점 대비 -10%, 외국인 연속 순매도, 업종 강도 5위 밖, 뉴스 악재 · ETF 신호: 60일선 이탈, 고점 대비 -10%, 테마 순위 하락${warn.news_checked ? '' : ' (뉴스 점검 미사용)'} · 신호 2개 이상 또는 -15%·심각한 악재면 '경고'</p>
-    ${hist.length ? `<details style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;color:var(--text2)">최근 경고 기록</summary><ul class="sig">${hist.map(h=>`<li>${h.date} ${h.name} — ${h.level}: ${h.signals.join(', ')}</li>`).join('')}</ul></details>` : ''}`;
-}
-
-function renderBrief(brief, recs){
-  const body = $('#brief-body');
-  const w = recs?.weeks?.at(-1);
-  const secs = w?.sectors || [];
-  const b = brief;
-  const left = b ? `<div class="brief">
-      <p style="font-size:12px;color:var(--muted)">${b.date} 작성</p>
-      <p>${b.summary||''}</p>
-      ${b.foreign?`<p><b>외국인 수급</b> ${b.foreign}</p>`:''}
-      ${b.domestic?`<p><b>국내 경제</b> ${b.domestic}</p>`:''}
-      ${b.global?`<p><b>세계 정세</b> ${b.global}</p>`:''}
-      ${b.risks?.length?`<p><b>주요 위험</b></p><ul class="sig">${b.risks.map(r=>`<li>${r}</li>`).join('')}</ul>`:''}
-      ${Object.keys(b.sector_outlook||{}).length?`<div class="chips">${Object.entries(b.sector_outlook).map(([k,v])=>`<span class="chip" title="${(b.sector_reason||{})[k]||''}">${k} ${v>0?'▲ 긍정':v<0?'▼ 부정':'중립'}</span>`).join('')}</div><p class="note">업종 전망은 점수에 ±0.15만 반영되는 보정값입니다. 칩에 마우스를 올리면 근거가 보입니다.</p>`:''}
-    </div>` : `<div class="empty">브리핑 없음 — 저장소 Secrets에 ANTHROPIC_API_KEY를 넣으면 매주 화요일 자동 작성됩니다.</div>`;
-  const right = secs.length ? `<div class="tbl"><table>
-      <tr><th>순위</th><th class="l">업종</th><th>1개월(중앙값)</th><th>외국인 수급</th><th>뉴스 전망</th></tr>
-      ${secs.map(s=>`<tr><td>${s.rank}</td><td class="l">${s.sector}${s.rank<=3?' <span class="badge b-BUY" style="margin:0 0 0 4px">후보</span>':''}</td><td>${pct(s.ret_21)}</td><td>${s.foreign_flow==null?'–':pct(s.foreign_flow)}</td><td>${s.tilt>0?'▲':s.tilt<0?'▼':'–'}</td></tr>`).join('')}
-    </table></div><p class="note">${w.signal_date} 기준 · 상위 3개 업종에서만 신규 편입, 5위 안이면 보유 유지</p>` : '';
-  body.innerHTML = `<div class="grid2"><div>${left}</div><div>${right}</div></div>`;
-}
-
-function renderPerf(perf, recs){
-  const body = $('#perf-body');
-  if(!perf || perf.empty || !perf.curve){ body.innerHTML = `<div class="empty">첫 매매가 체결된 이후(추천 다음 거래일)부터 표시됩니다.</div>`; return; }
-  const S = perf.summary || {};
-  const k = (l, v, s) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s||''}</div></div>`;
-  const hz = [['1w','1주'],['1m','1개월'],['3m','3개월']];
-  body.innerHTML = `
-    <div class="kpis">
-      ${k('평가금액', won(perf.value), `시드 ${won(perf.seed)} · 현금 ${won(perf.cash)}`)}
-      ${k('누적 수익률 (비용 포함)', pct(perf.total), `KOSPI ${pctPlain(perf.kospi_total)}`)}
-      ${k('최대 낙폭', pct(perf.mdd), `시작 ${perf.curve.dates[0]}`)}
-      ${hz.map(([key,l]) => S[key] ? k(`${l} 평균 수익률`, pct(S[key].avg), `KOSPI ${pctPlain(S[key].kospi_avg)} · 상승 ${Math.round(S[key].win_rate*100)}% · KOSPI초과 ${Math.round(S[key].beat_rate*100)}% (${S[key].n}회)`) : k(`${l} 평균 수익률`,'–','데이터 쌓이는 중')).join('')}
     </div>
-    <div class="chart"><canvas id="c-perf"></canvas></div>
-    ${perf.holdings?.length ? `<h2 style="margin-top:18px">현재 보유</h2><div class="tbl"><table>
-      <tr><th class="l">종목</th><th>편입일</th><th>수량</th><th>편입가</th><th>현재가</th><th>평가금액</th><th>수익률</th></tr>
-      ${perf.holdings.map(h=>`<tr><td class="l">${h.name} <span style="color:var(--muted)">${h.code}</span></td><td>${h.buy_date}</td><td>${h.shares??'–'}주</td><td>${num(h.buy_price)}</td><td>${num(h.last)}</td><td>${won(h.value)}</td><td>${pct(h.ret)}</td></tr>`).join('')}
-    </table></div>` : ''}
-    <p class="note">기준일 ${perf.last_date} 종가 · 수익률 표시는 상승 빨강 / 하락 파랑</p>`;
+    ${shift}
+  </div>`;
+}
+
+/* ── 추천 카드 ── */
+function renderCards(recs){
+  const el = $('#cards');
+  const w = recs?.weeks?.at(-1);
+  if(!w || !w.picks.length){ $('#sec-cards').style.display='none'; return; }
+  $('#cards-aside').textContent = `${md(w.signal_date)} 기준`;
+  const ACT = {BUY:'신규', HOLD:'유지'};
+  el.innerHTML = `<div class="cards">${w.picks.map(p => {
+    const etf = p.type==='etf';
+    const ctx = etf ? `테마 강도 ${p.rank??'–'}위` : `${p.sector||''}${p.sector_rank?` · 업종 ${p.sector_rank}위`:''}`;
+    const third = etf ? ['3개월', pct(p.ret_63)] : ['예상 1주', p.exp_week==null?'–':pct(p.exp_week,2)];
+    const more = etf
+      ? `<dl class="kv"><dt>1개월</dt><dd>${pct(p.ret_21)}</dd><dt>6개월 고가 대비</dt><dd>${p.near_high==null?'–':(p.near_high*100).toFixed(0)+'%'}</dd><dt>매도 거래세</dt><dd>없음</dd>${p.ret?.now!=null?`<dt>추천 후</dt><dd>${pct(p.ret.now)}</dd>`:''}</dl>`
+      : `<dl class="kv"><dt>1개월 / 3개월</dt><dd>${pct(p.ret_21)} / ${pct(p.ret_63)}</dd><dt>52주 고가 대비</dt><dd>${p.near_high==null?'–':(p.near_high*100).toFixed(0)+'%'}</dd><dt>거래대금 증가</dt><dd>${p.tv_ratio==null?'–':p.tv_ratio.toFixed(2)+'배'}</dd><dt>외국인 20일</dt><dd>${pct(p.flow_f)}</dd><dt>기관 20일</dt><dd>${pct(p.flow_i)}</dd><dt>PER / PBR</dt><dd>${f2(p.per)} / ${f2(p.pbr)}</dd>${p.ret?.now!=null?`<dt>추천 후</dt><dd>${pct(p.ret.now)}</dd>`:''}</dl>`;
+    return `<div class="card">
+      <div class="badges"><span class="badge ${p.action}">${ACT[p.action]}</span><span class="badge">${etf?'테마 ETF':'종목'}</span></div>
+      <div class="nm">${p.name}</div><div class="cd">${p.code}</div>
+      <div class="ctx">${ctx}</div>
+      <div class="kv3">
+        <div>추천가<b>${num(p.close)}</b></div>
+        <div>수량·금액<b>${p.shares??'–'}주</b><span class="mut num" style="font-size:11px">${manwon(p.amount)}</span></div>
+        <div>${third[0]}<b>${third[1]}</b></div>
+      </div>
+      <details class="more"><summary>지표 더보기</summary>${more}</details>
+    </div>`;}).join('')}</div>`;
+}
+
+/* ── 보유 점검 ── */
+function renderWarn(warn){
+  const el = $('#warn');
+  if(!warn || !warn.items?.length){ el.innerHTML = `<div class="empty">점검할 보유 종목이 없습니다.</div>`; return; }
+  $('#warn-aside').textContent = `${md(warn.date)} 장마감 기준`;
+  const order = {경고:0, 주의:1, 정상:2};
+  const items = [...warn.items].sort((a,b)=>order[a.level]-order[b.level]);
+  const flagged = items.filter(i=>i.level!=='정상');
+  const table = `<table class="stack">
+    <thead><tr><th class="l">종목</th><th class="l">상태</th><th>편입 후</th><th>고점 대비</th><th class="l" style="width:45%">신호</th></tr></thead>
+    <tbody>${items.map(i => `<tr>
+      <td class="l first"><span class="lv lv-${i.level} m-only" style="margin-right:6px">${i.level}</span><b>${i.name}</b> <span class="mut" style="font-size:12px">${i.type==='etf'?'ETF':(i.sector||'')}</span></td>
+      <td class="l lvc"><span class="lv lv-${i.level}">${i.level}</span></td>
+      <td data-k="편입 후">${pct(i.ret)}</td><td data-k="고점 대비" class="rt">${pct(i.dd)}</td>
+      <td class="l full">${i.signals.length?`<ul class="sig">${i.signals.map(x=>`<li>${x}</li>`).join('')}</ul>`:'<span class="mut">특이 신호 없음</span>'}</td></tr>`).join('')}</tbody>
+  </table>`;
+  const note = `<div class="note">종목: 20일선 이탈 · 고점 대비 -10% · 외국인 연속 순매도 · 업종 5위 밖 · 뉴스 악재 / ETF: 60일선 이탈 · 고점 대비 -10% · 테마 순위 하락. 신호 2개 이상이면 경고.${warn.news_checked?'':' (뉴스 점검 미사용)'}</div>`;
+  el.innerHTML = flagged.length ? `<div class="panel">${table}${note}</div>` :
+    `<div class="panel"><div style="display:flex;align-items:center;gap:10px;font-size:15px"><span class="lv lv-정상">정상</span><b>보유 ${items.length}개 모두 특이 신호 없음</b></div>
+     <details class="more" style="margin-top:8px"><summary>종목별 보기</summary>${table}${note}</details></div>`;
+}
+
+/* ── 성과 ── */
+function renderPerf(perf){
+  const el = $('#perf');
+  if(!perf || perf.empty || !perf.curve){ el.innerHTML = `<div class="empty">첫 매매가 체결된 뒤부터 표시됩니다.</div>`; return; }
+  const S = perf.summary || {}, w1 = S['1w'];
+  const k = (l, v, s) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s||''}</div></div>`;
+  el.innerHTML = `<div class="kpis">
+      ${k('평가금액', won(perf.value), `현금 ${won(perf.cash)}`)}
+      ${k('누적 수익률', pct(perf.total), `같은 기간 KOSPI ${pctP(perf.kospi_total)}`)}
+      ${k('최대 낙폭', pct(perf.mdd), `${md(perf.curve.dates[0])}부터`)}
+      ${k('주간 평균', w1?pct(w1.avg):'–', w1?`KOSPI보다 나은 주 ${Math.round(w1.beat_rate*100)}% (${w1.n}주)`:'데이터 쌓이는 중')}
+    </div>
+    <div class="panel" style="margin-top:12px"><div class="chart"><canvas id="c-perf"></canvas></div>
+    ${perf.holdings?.length?`<table class="stack" style="margin-top:16px">
+      <thead><tr><th class="l">현재 보유</th><th>수량</th><th>편입가 → 현재가</th><th>평가금액</th><th>수익률</th></tr></thead>
+      <tbody>${perf.holdings.map(h=>`<tr><td class="l"><b>${h.name}</b> <span class="mut" style="font-size:12px">${md(h.buy_date)} 편입</span></td>
+        <td data-k="수량" class="mob2">${h.shares??'–'}주</td><td data-k="가격" class="mob2 rt">${num(h.buy_price)} → ${num(h.last)}</td>
+        <td data-k="평가" class="mob2 lft">${won(h.value)}</td><td class="rt mobr">${pct(h.ret)}</td></tr>`).join('')}</tbody></table>`:''}
+    <div class="note">${md(perf.last_date)} 종가 기준</div></div>`;
   lineChart($('#c-perf'), perf.curve.dates, [
-    {label:'추천 포트폴리오', data:perf.curve.portfolio, color:css('--s1')},
-    {label:'KOSPI', data:perf.curve.kospi, color:css('--bench'), dash:[5,4], width:1.5},
-  ]);
+    {label:'내 포트폴리오', data:perf.curve.portfolio, color:css('--s1')},
+    {label:'KOSPI', data:perf.curve.kospi, color:css('--bench'), dash:[5,4], width:1.5}]);
 }
 
+/* ── 시장 ── */
+function renderMarket(brief, recs){
+  const el = $('#market');
+  const w = recs?.weeks?.at(-1), secs = (w?.sectors||[]);
+  const b = brief;
+  if(b) $('#brief-aside').textContent = `${md(b.date)} Claude 뉴스 분석`;
+  const left = b ? `<div class="brief">
+      <p style="font-size:15px">${b.summary||''}</p>
+      ${b.foreign?`<p><b>외국인</b> ${b.foreign}</p>`:''}${b.domestic?`<p><b>국내</b> ${b.domestic}</p>`:''}${b.global?`<p><b>세계</b> ${b.global}</p>`:''}
+      ${b.risks?.length?`<p style="margin-top:14px"><b>주요 위험</b></p><ul class="sig" style="margin-bottom:12px">${b.risks.map(r=>`<li>${r}</li>`).join('')}</ul>`:''}
+      ${Object.keys(b.sector_outlook||{}).length?`<div class="chips">${Object.entries(b.sector_outlook).map(([k,v])=>`<span class="chipo" title="${(b.sector_reason||{})[k]||''}">${k} ${v>0?'▲':v<0?'▼':'–'}</span>`).join('')}</div>`:''}
+    </div>` : `<div class="mut" style="font-size:14px">뉴스 브리핑 없음 — 저장소 Secrets에 ANTHROPIC_API_KEY를 넣으면 매주 화요일 자동 작성됩니다.</div>`;
+  const top = secs.slice(0,6);
+  const right = top.length ? `<table>
+      <thead><tr><th class="l">업종 강도</th><th>1개월</th><th>외국인</th></tr></thead>
+      <tbody>${top.map(s=>`<tr><td class="l"><span class="mut num" style="display:inline-block;width:18px">${s.rank}</span>${s.sector}${s.rank<=3?' <span class="badge BUY" style="margin-left:4px">후보</span>':''}${s.tilt?` <span class="mut">${s.tilt>0?'▲':'▼'}</span>`:''}</td><td>${pct(s.ret_21)}</td><td>${s.foreign_flow==null?'–':pct(s.foreign_flow)}</td></tr>`).join('')}</tbody></table>
+      <div class="note">상위 3개 업종에서만 신규 편입 · ▲▼ 뉴스 전망</div>` : '';
+  el.innerHTML = `<div class="panel"><div class="grid2"><div>${left}</div><div>${right}</div></div></div>`;
+}
+
+/* ── 이력 ── */
 function renderHist(recs){
-  const body = $('#hist-body');
+  const el = $('#hist');
   const weeks = recs?.weeks || [];
-  if(!weeks.length){ body.innerHTML = `<div class="empty">추천 이력이 없습니다.</div>`; return; }
-  const cell = (r, k, kos) => r?.[k]==null ? '<td>–</td>' : `<td>${pct(r[k])}<br><span style="color:var(--muted);font-size:11px">(${pctPlain(kos?.[k])})</span></td>`;
-  let rows = '';
-  [...weeks].reverse().forEach(w => {
-    const n = w.picks.length + 1;
-    w.picks.forEach((p,i) => {
-      rows += `<tr>${i===0?`<td class="l" rowspan="${n}"><b>${w.signal_date}</b><br><span style="color:var(--muted);font-size:11px">${w.strategy_label}</span></td>`:''}
-        <td class="l"><span class="badge b-${p.action}" style="margin:0 6px 0 0">${p.action==='BUY'?'편입':'유지'}</span>${p.name}</td>
-        <td>${num(p.entry)}</td>${['1w','1m','3m','now'].map(k=>cell(p.ret,k,w.kospi)).join('')}</tr>`;
-    });
-    rows += `<tr style="font-weight:700"><td class="l">평균</td><td></td>${['1w','1m','3m','now'].map(k=>cell(w.avg,k,w.kospi)).join('')}</tr>`;
-  });
-  body.innerHTML = `<div class="tbl"><table>
-    <tr><th class="l">추천일</th><th class="l">종목</th><th>추천가</th><th>1주</th><th>1개월</th><th>3개월</th><th>현재까지</th></tr>${rows}</table></div>`;
+  if(!weeks.length){ el.innerHTML = `<div class="empty">추천 이력이 없습니다.</div>`; return; }
+  el.innerHTML = [...weeks].reverse().map(w => {
+    const a = w.avg || {}, k = w.kospi || {};
+    const names = w.picks.length ? w.picks.map(p=>p.name).join(', ') : '현금 보유';
+    const r = (key, lab) => a[key]==null ? '' : `<div class="r num ${key!=='now'?'k':''}">${pct(a[key])}<small>${lab} · KOSPI ${pctP(k[key])}</small></div>`;
+    const rows = w.picks.map(p=>`<tr><td class="l full"><span class="badge ${p.action}">${p.action==='BUY'?'편입':'유지'}</span> ${p.name}</td>
+        <td data-k="추천가">${num(p.entry)}</td><td data-k="1주">${pct(p.ret?.['1w'])}</td><td data-k="1개월" class="hm">${pct(p.ret?.['1m'])}</td>
+        <td data-k="3개월" class="hm">${pct(p.ret?.['3m'])}</td><td data-k="현재" class="rt">${pct(p.ret?.now)}</td></tr>`).join('');
+    return `<details class="wk"><summary><b class="num">${w.signal_date}${w.mode==='bear'?' <span class="badge" style="background:var(--bear-bg);color:var(--up)">하락장</span>':''}</b>
+        <span class="names">${names}</span>${r('1w','1주')}${r('now','현재')}</summary>
+      ${rows?`<table class="stack hist" style="margin-bottom:12px"><thead><tr><th class="l">종목</th><th>추천가</th><th>1주</th><th>1개월</th><th>3개월</th><th>현재</th></tr></thead><tbody>${rows}</tbody></table>`:''}
+    </details>`;}).join('');
 }
 
+/* ── 백테스트 ── */
 function renderBT(bt){
-  const body = $('#bt-body');
-  if(!bt){ body.innerHTML = `<div class="empty">백테스트 결과가 없습니다. GitHub Actions의 <b>backtest</b> 워크플로를 먼저 실행하세요.</div>`; return; }
-  $('#bt-sub').textContent = `${bt.period[0]} ~ ${bt.period[1]} · 시드 ${won(bt.seed)}, 정수 주식 · 화요일 종가 매매 · ${bt.universe} · ★ 현재 사용 전략 · 비용 매수 ${(bt.costs.buy*100).toFixed(2)}% / 매도 ${(bt.costs.sell*100).toFixed(2)}% · ${bt.in_sample_end}까지 성과로 전략 선택, 이후는 검증 구간`;
+  const el = $('#bt');
+  if(!bt){ el.innerHTML = `<div class="empty">백테스트 결과가 없습니다.</div>`; return; }
+  $('#bt-aside').textContent = `${bt.period[0].slice(0,4)}~${bt.period[1].slice(0,4)} · 시드 100만원 · 화요일 종가 매매`;
   const names = Object.keys(bt.strategies);
-  const tabs = [['full','전체 기간'],['in_sample','선택 구간'],['out_sample','검증 구간']];
-  body.innerHTML = `<div class="tabs" id="bt-tabs">${tabs.map(([k,l],i)=>`<button data-k="${k}" class="${i===0?'on':''}">${l}</button>`).join('')}</div>
-    <div class="tbl" id="bt-table"></div>
-    <div class="chart" style="margin-top:16px;height:360px"><canvas id="c-bt"></canvas></div>
-    <p class="note">범례를 눌러 전략별 곡선을 켜고 끌 수 있습니다 · 로그 스케일 · 가치(PER/PBR) ${bt.has_value_factor?'포함':'수집 실패로 제외'} · 외국인 수급 ${bt.has_flow?'포함':'수집 실패로 제외'} · 업종 분류는 현재 기준 · 뉴스 보정은 과거 재현이 불가해 백테스트에 미포함</p>`;
+  const tabs = [['full','전체 기간'],['out_sample',`검증 구간(${+bt.in_sample_end.slice(0,4)+1}~)`]];
+  el.innerHTML = `<div class="tabs" id="bt-tabs">${tabs.map(([k,l],i)=>`<button data-k="${k}" class="${i===0?'on':''}">${l}</button>`).join('')}</div>
+    <div class="hscroll" id="bt-table"></div>
+    <div class="chart" style="margin-top:20px;height:320px"><canvas id="c-bt"></canvas></div>
+    <div class="note">${bt.universe} · ★ 현재 사용 전략 · 범례를 눌러 곡선 켜고 끄기 · 로그 스케일 · 가치 ${bt.has_value_factor?'포함':'제외'} · 수급 ${bt.has_flow?'포함':'제외'} · 개별 종목 전략만 비교(ETF·하락장 모드 비교는 별도 실험)</div>`;
   const draw = key => {
-    const rows = names.map(n => { const s = bt.strategies[n], m = s[key] || {};
-      return `<tr class="${n===bt.selected?'sel':''}"><td class="l">${n===bt.selected?'★ ':''}${s.label}${n===bt.best_in_sample&&n!==bt.selected?' <span style="font-size:11px;color:var(--muted)">(선택구간 1위)</span>':''}<br><span style="color:var(--muted);font-size:11px">${s.desc}</span></td>
-        <td>${pct(m.cagr)}</td><td>${pct(m.excess_cagr)}</td><td>${f2(m.sharpe)}</td><td>${pct(m.mdd)}</td>
-        <td>${m.weekly_win_rate==null?'–':Math.round(m.weekly_win_rate*100)+'%'}</td><td>${m.weekly_beat_bench==null?'–':Math.round(m.weekly_beat_bench*100)+'%'}</td><td>${s.buys_per_year}</td><td>${key==='full'?won(s.final_krw):'–'}</td></tr>`; }).join('');
-    $('#bt-table').innerHTML = `<table><tr><th class="l">전략</th><th>연수익률</th><th>KOSPI 대비</th><th>샤프</th><th>최대낙폭</th><th>주간 상승확률</th><th>주간 KOSPI초과</th><th>매수/년</th><th>100만원→</th></tr>${rows}</table>`;
+    $('#bt-table').innerHTML = `<table><thead><tr><th class="l">전략</th><th>연수익률</th><th>KOSPI 대비</th><th>최대낙폭</th><th>매수/년</th>${key==='full'?'<th>100만원→</th>':''}</tr></thead><tbody>${names.map(n=>{const s=bt.strategies[n], m=s[key]||{};
+      return `<tr class="${n===bt.selected?'sel':''}"><td class="l">${n===bt.selected?'★ ':''}${s.label}</td><td>${pct(m.cagr)}</td><td>${pct(m.excess_cagr)}</td><td>${pct(m.mdd)}</td><td>${s.buys_per_year}</td>${key==='full'?`<td>${manwon(s.final_krw)}</td>`:''}</tr>`;}).join('')}</tbody></table>`;
   };
   draw('full');
+  $('#bt-tabs').onclick = e => { const b = e.target.closest('button'); if(!b) return;
+    document.querySelectorAll('#bt-tabs button').forEach(x=>x.classList.toggle('on', x===b)); draw(b.dataset.k); };
   const colors = ['--s1','--s2','--s3','--s4','--s5','--s6'];
   const order = [bt.selected, ...names.filter(n=>n!==bt.selected)];
-  lineChart($('#c-bt'), bt.curve.dates, [
-    ...order.map((n,i) => ({label:bt.strategies[n].label, data:bt.curve[n], color:css(colors[i%6]), width:n===bt.selected?2.5:1.5, hidden:i>2})),
-    {label:'KOSPI', data:bt.curve.bench, color:css('--bench'), dash:[5,4], width:1.5},
-  ], {log:true});
+  let chart = null;
+  $('#bt-fold').addEventListener('toggle', () => {
+    if(!$('#bt-fold').open || chart) return;
+    chart = lineChart($('#c-bt'), bt.curve.dates, [
+      ...order.map((n,i) => ({label:bt.strategies[n].label, data:bt.curve[n], color:css(colors[i%6]), width:n===bt.selected?2.5:1.5, hidden:i>1})),
+      {label:'KOSPI', data:bt.curve.bench, color:css('--bench'), dash:[5,4], width:1.5}], {log:true});
+  });
 }
 
 (async () => {
-  const [recs, perf, bt, st, warn, brief] = await Promise.all(['data/recommendations.json','data/performance.json','data/backtest.json','data/strategy.json','data/warnings.json','data/brief.json'].map(load));
-  $('#meta').textContent = `업데이트 ${perf?.updated_at || recs?.updated_at || '–'} · 개별 종목 3(테마·수급) + 테마 ETF 2 · KOSPI 120일선 아래면 하락장 모드 · 매주 화요일 장마감 직후 추천(종가 기준) · 보유 종목은 매일 점검`;
-  renderWarn(warn); renderThis(recs); renderBrief(brief, recs); renderPerf(perf, recs); renderHist(recs); renderBT(bt);
+  const [recs, perf, bt, warn, brief] = await Promise.all(['data/recommendations.json','data/performance.json','data/backtest.json','data/warnings.json','data/brief.json'].map(load));
+  $('#meta').textContent = `업데이트 ${perf?.updated_at || recs?.updated_at || '–'} · 매주 화요일 장마감 직후 추천 · 보유 종목 매일 점검`;
+  renderHero(recs, warn, perf); renderCards(recs); renderWarn(warn); renderPerf(perf); renderMarket(brief, recs); renderHist(recs); renderBT(bt);
 })();
 </script>
 </body>
