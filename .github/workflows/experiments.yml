@@ -24,6 +24,8 @@ jobs:
       - name: 개선안 비교 실험
         env:
           TZ: Asia/Seoul
+          KRX_ID: ${{ secrets.KRX_ID }}
+          KRX_PW: ${{ secrets.KRX_PW }}
         run: python -m src.experiments | tee experiments.log
       - name: 결과 커밋
         run: |

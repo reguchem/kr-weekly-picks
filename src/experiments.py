@@ -11,7 +11,8 @@ import numpy as np
 import pandas as pd
 
 from . import config as C
-from .data import get_universe, get_price_panel, get_ohlcv, get_sectors, get_theme_etfs
+from .data import get_universe, get_price_panel, get_ohlcv, get_sectors, get_theme_etfs, check_krx_login
+from .backtest import load_flow, load_fundamentals
 from .strategy import (Factors, score, select_cost_aware, fit_calibration, simulate,
                        weekly_signal_dates, metrics)
 
@@ -78,22 +79,46 @@ def run():
     is_end = pd.Timestamp(C.IN_SAMPLE_END)
     count = int(np.busday_count(np.datetime64(C.BACKTEST_START), np.datetime64("today"))) + 320
     kospi = get_ohlcv("KOSPI", count)["close"]
+    check_krx_login()
 
     # ── 개별 종목 (테마·수급) ──
     uni = get_universe(C.UNIVERSE_SIZE)
     px = get_price_panel(uni["code"].tolist(), count)
     sectors = get_sectors()
-    F = Factors(px["close"], px["volume"], None, sectors)
+    codes = uni["code"].tolist()
+    flow = load_flow(codes, str(px["close"].index[0].date()), str(px["close"].index[-1].date()))
+    F = Factors(px["close"], px["volume"], flow, sectors)
+    fund_dates = [d for d in weekly_signal_dates(px["close"].index) if d >= t0 - pd.Timedelta(days=10)]
+    fund = load_fundamentals(fund_dates, codes)
+    fund_keys = pd.DatetimeIndex(sorted(fund))
+
+    def fund_asof(d):
+        if not len(fund_keys):
+            return None
+        i = fund_keys.searchsorted(d, side="right") - 1
+        return fund[fund_keys[i]] if i >= 0 and (d - fund_keys[i]).days <= 10 else None
+    print(f"[data] 수급 {'있음' if flow is not None else '없음'}, PER/PBR {len(fund)}개 날짜")
     # ── 테마 ETF ──
     etfs = get_theme_etfs(80)
     epx = get_price_panel(etfs["code"].tolist(), count)
     E = EtfFactors(epx["close"], epx["volume"])
     enames = dict(zip(etfs["code"], etfs["name"]))
 
+    # 최근 신호 점검 (지난 실험에서 마지막 화요일 ETF 선정이 비었던 원인 확인용)
+    last_t = weekly_signal_dates(epx["close"].index, C.TRADE_WEEKDAY)[-1]
+    ma120 = kospi.rolling(120).mean()
+    sc_last = E.scores(last_t)
+    tv_ok = (E.tv20.loc[last_t] >= ETF_MIN_TV).sum()
+    above = (E.close.loc[last_t] > E.ma60.loc[last_t]).sum()
+    print(f"[점검] {last_t.date()} KOSPI {kospi.loc[:last_t].iloc[-1]:,.0f} / 120일선 {ma120.loc[:last_t].iloc[-1]:,.0f} · "
+          f"ETF 시세 {E.close.loc[last_t].notna().sum()}개, 거래대금 통과 {tv_ok}, 60일선 위 {above}, 최종 후보 {len(sc_last)}")
+    print("[점검] 상위 후보:", [enames.get(c, c) for c in sc_last.index[:6]])
+
     variants = [
         ("S1", "테마·수급 종목 (현행)", "stock", {"strategy": "theme_flow", "ma": None}),
         ("S2", "테마·수급 종목 느린교체", "stock", {"strategy": "theme_flow_slow", "ma": None}),
         ("S3", "S2 + 시장필터(120일선)", "stock", {"strategy": "theme_flow_slow", "ma": 120}),
+        ("C1", "복합(가치+저변동+모멘텀)", "stock", {"strategy": "composite", "ma": None}),
         ("E1", "테마 ETF 순환 4개", "etf", {"n": 4, "ma": None}),
         ("E2", "테마 ETF 4개 + 시장필터(120일선)", "etf", {"n": 4, "ma": 120}),
         ("E3", "테마 ETF 4개 + 시장필터(200일선)", "etf", {"n": 4, "ma": 200}),
@@ -114,7 +139,7 @@ def run():
                     if d not in fcache:
                         fcache[d] = F.at(d)
                     ctx = {}
-                    sc = score(cfg["strategy"], fcache[d], None, ctx)
+                    sc = score(cfg["strategy"], fcache[d], fund_asof(d), ctx)
                     if sc is not None and len(sc) >= C.N_PICKS:
                         scored.append((d, sc, ctx.get("new_ok")))
                 samples = []

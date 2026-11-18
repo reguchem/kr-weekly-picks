@@ -26,6 +26,8 @@ jobs:
       - name: 백테스트 실행 및 전략 선택
         env:
           TZ: Asia/Seoul
+          KRX_ID: ${{ secrets.KRX_ID }}
+          KRX_PW: ${{ secrets.KRX_PW }}
         run: python -m src.backtest
       - name: 결과 커밋
         run: |

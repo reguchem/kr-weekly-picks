@@ -281,17 +281,49 @@ def get_sectors() -> dict:
 
 
 # ───────────────────────── 투자자별 순매수 ─────────────────────────
+_FLOW_ERR = None
+
+
+def check_krx_login():
+    """KRX 로그인 상태 점검 (로그용). KRX_ID / KRX_PW 환경변수 필요."""
+    if SYNTHETIC:
+        return True
+    has = bool(os.environ.get("KRX_ID")) and bool(os.environ.get("KRX_PW"))
+    try:
+        from pykrx import stock
+        d = (pd.Timestamp.today() - pd.Timedelta(days=10)).strftime("%Y%m%d")
+        e = pd.Timestamp.today().strftime("%Y%m%d")
+        df = stock.get_market_trading_value_by_date(d, e, "005930")
+        ok = df is not None and not df.empty
+        f = stock.get_market_fundamental(stock.get_nearest_business_day_in_a_week(), market="KOSPI")
+        ok2 = f is not None and not f.empty
+        print(f"[krx] 계정 설정 {'있음' if has else '없음'} · 수급 조회 {'성공' if ok else '실패'} · "
+              f"PER/PBR 조회 {'성공' if ok2 else '실패'}")
+        return ok
+    except Exception as e:  # noqa
+        print(f"[krx] 계정 설정 {'있음' if has else '없음'} · 조회 실패: {e!r}")
+        return False
 def get_flow_history(code: str, start: str, end: str) -> pd.DataFrame | None:
     """일별 외국인·기관 순매수 대금(원). columns: foreign, inst  (pykrx/KRX)"""
     if SYNTHETIC:
         return _synthetic_flow(code)
     try:
         from pykrx import stock
-        df = stock.get_market_trading_value_by_date(start.replace("-", ""), end.replace("-", ""), code)
-        if df is None or df.empty:
+        parts = []
+        s0, e0 = pd.Timestamp(start), pd.Timestamp(end)
+        while s0 <= e0:                      # KRX 조회 기간 제한 대비 2년 단위로 나눠 조회
+            s1 = min(s0 + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+            df = stock.get_market_trading_value_by_date(s0.strftime("%Y%m%d"), s1.strftime("%Y%m%d"), code)
+            if df is not None and not df.empty:
+                parts.append(pd.DataFrame({"foreign": df["외국인합계"], "inst": df["기관합계"]}))
+            s0 = s1 + pd.Timedelta(days=1)
+        if not parts:
             return None
-        return pd.DataFrame({"foreign": df["외국인합계"], "inst": df["기관합계"]})
+        out = pd.concat(parts)
+        return out[~out.index.duplicated()]
     except Exception as e:  # noqa
+        global _FLOW_ERR
+        _FLOW_ERR = repr(e)
         return None
 
 
@@ -326,7 +358,7 @@ def get_flow_recent_naver(code: str, pages: int = 2) -> pd.DataFrame | None:
         return None
 
 
-def get_flow_panel(codes, start: str, end: str, recent_only=False, workers=6):
+def get_flow_panel(codes, start: str, end: str, recent_only=False, workers=4):
     """{'foreign': DataFrame(date×code), 'inst': ...} — 실패 종목은 빠짐"""
     def job(c):
         df = None if recent_only else get_flow_history(c, start, end)
@@ -337,7 +369,7 @@ def get_flow_panel(codes, start: str, end: str, recent_only=False, workers=6):
     with ThreadPoolExecutor(workers) as ex:
         res = {c: d for c, d in ex.map(job, list(dict.fromkeys(codes))) if d is not None and len(d)}
     if not res:
-        print("[flow] 수급 데이터 없음")
+        print(f"[flow] 수급 데이터 없음 (마지막 오류: {_FLOW_ERR})")
         return None
     print(f"[flow] {len(res)}/{len(codes)} 종목")
     return {k: pd.DataFrame({c: d[k] for c, d in res.items()}).sort_index() for k in ("foreign", "inst")}
