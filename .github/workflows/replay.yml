@@ -1,0 +1,40 @@
+name: replay
+
+on:
+  workflow_dispatch:
+    inputs:
+      dates:
+        description: "재현할 화요일 날짜들 (공백 구분, 예: 2026-11-03 2026-11-10)"
+        required: true
+        default: "2026-11-03"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: replay
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: 과거 추천 재현
+        env:
+          TZ: Asia/Seoul
+        run: python -m src.replay ${{ inputs.dates }} 2>&1 | grep -v "^Error occurred" | tee replay.log
+      - name: 결과 커밋
+        run: |
+          mkdir -p docs/data && mv replay.log docs/data/replay.log
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data/replay.json docs/data/replay.log
+          git diff --cached --quiet || git commit -m "data: replay"
+          for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done
