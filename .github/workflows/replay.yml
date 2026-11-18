@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: replay
+  group: data-update
   cancel-in-progress: false
 
 jobs:
@@ -29,6 +29,8 @@ jobs:
       - name: 과거 추천 재현
         env:
           TZ: Asia/Seoul
+          KRX_ID: ${{ secrets.KRX_ID }}
+          KRX_PW: ${{ secrets.KRX_PW }}
         run: python -m src.replay ${{ inputs.dates }} 2>&1 | grep -v "^Error occurred" | tee replay.log
       - name: 결과 커밋
         run: |

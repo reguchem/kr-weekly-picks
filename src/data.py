@@ -275,6 +275,24 @@ def _sectors_fdr():
     return {str(c).zfill(6): s for c, s in zip(df["Code"], df[col]) if isinstance(s, str)}
 
 
+def _sectors_krx():
+    """KRX 업종분류 현황 (pykrx, KRX 로그인 필요). 업종 수는 적지만(약 20~30) 안정적."""
+    if not (os.environ.get("KRX_ID") and os.environ.get("KRX_PW")):
+        return {}
+    from pykrx import stock
+    d = stock.get_nearest_business_day_in_a_week()
+    out = {}
+    for mk in ("KOSPI", "KOSDAQ"):
+        df = stock.get_market_sector_classifications(d, mk)
+        if df is None or df.empty:
+            continue
+        df = df.reset_index() if "종목코드" not in df.columns else df
+        code_col = "종목코드" if "종목코드" in df.columns else df.columns[0]
+        for c, sct in zip(df[code_col], df["업종명"]):
+            out[str(c).zfill(6)] = str(sct)
+    return out
+
+
 def get_sectors() -> dict:
     """종목코드 → 업종명 (현재 기준)"""
     if SYNTHETIC:
@@ -282,7 +300,7 @@ def get_sectors() -> dict:
         names = ["반도체", "2차전지", "조선", "방산", "바이오", "은행", "자동차", "화학", "인터넷", "건설",
                  "철강", "유통", "게임", "전력기기", "화장품"]
         return {c: names[i % len(names)] for i, c in enumerate(codes)}
-    for fn in (_sectors_naver, _sectors_fdr):
+    for fn in (_sectors_fdr, _sectors_naver, _sectors_krx):
         try:
             m = fn()
             print(f"[sector] {fn.__name__}: {len(m)} 종목, {len(set(m.values()))} 업종")
