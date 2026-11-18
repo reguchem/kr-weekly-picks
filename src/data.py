@@ -256,7 +256,8 @@ def _synthetic_fundamentals(date):
 def _sectors_naver():
     r = _get("https://finance.naver.com/sise/sise_group.naver", params={"type": "upjong"})
     html = r.content.decode("euc-kr", errors="ignore")
-    groups = dict(re.findall(r'sise_group_detail\.naver\?type=upjong&no=(\d+)">([^<]+)<', html))
+    groups = dict(re.findall(r'sise_group_detail\.naver\?type=upjong&(?:amp;)?no=(\d+)"[^>]*>([^<]+)<', html))
+    print(f"[sector] 네이버 업종 {len(groups)}개")
     out = {}
     for no, name in groups.items():
         h = _get("https://finance.naver.com/sise/sise_group_detail.naver",
@@ -284,8 +285,8 @@ def get_sectors() -> dict:
     for fn in (_sectors_naver, _sectors_fdr):
         try:
             m = fn()
+            print(f"[sector] {fn.__name__}: {len(m)} 종목, {len(set(m.values()))} 업종")
             if len(m) > 500:
-                print(f"[sector] {fn.__name__}: {len(m)} 종목, {len(set(m.values()))} 업종")
                 return m
         except Exception as e:  # noqa
             print(f"[sector] {fn.__name__} 실패: {e!r}")
