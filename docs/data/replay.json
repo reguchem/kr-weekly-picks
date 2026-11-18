@@ -1,0 +1,41 @@
+{
+ "seed": 1000000,
+ "cases": [
+  {
+   "date": "2026-11-03",
+   "market_ok": false,
+   "kospi": 5648.79,
+   "kospi_ma": 7089.885666666667,
+   "rule": {
+    "picks": [],
+    "total": 1000000.0,
+    "ret": 0.0
+   },
+   "ignore_filter": {
+    "picks": [],
+    "total": 1000000.0,
+    "ret": 0.0
+   },
+   "kospi_ret": -0.10455690510711146,
+   "kospi_last_date": "2026-11-18"
+  },
+  {
+   "date": "2026-11-10",
+   "market_ok": false,
+   "kospi": 5239.13,
+   "kospi_ma": 6986.522833333333,
+   "rule": {
+    "picks": [],
+    "total": 1000000.0,
+    "ret": 0.0
+   },
+   "ignore_filter": {
+    "picks": [],
+    "total": 1000000.0,
+    "ret": 0.0
+   },
+   "kospi_ret": -0.034540085853949076,
+   "kospi_last_date": "2026-11-18"
+  }
+ ]
+}
