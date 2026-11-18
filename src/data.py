@@ -379,8 +379,17 @@ def get_flow_recent_naver(code: str, pages: int = 2) -> pd.DataFrame | None:
 
 def get_flow_panel(codes, start: str, end: str, recent_only=False, workers=None):
     """{'foreign': DataFrame(date×code), 'inst': ...} — 실패 종목은 빠짐"""
+    if not recent_only and not SYNTHETIC and not (os.environ.get("KRX_ID") and os.environ.get("KRX_PW")):
+        print("[flow] KRX 계정 없음 → KRX 수급 조회 생략")
+        return None
+    fails = {"n": 0, "ok": 0}
+
     def job(c):
+        if not recent_only and fails["ok"] == 0 and fails["n"] >= 5:
+            return c, None                      # 처음 5종목이 모두 실패하면 KRX 조회 중단(로그인 문제 등)
         df = None if recent_only else get_flow_history(c, start, end)
+        if not recent_only:
+            fails["n" if df is None else "ok"] += 1
         if df is None and recent_only:
             df = get_flow_history(c, start, end) if SYNTHETIC else get_flow_recent_naver(c)
         return c, df
