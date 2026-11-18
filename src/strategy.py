@@ -255,7 +255,8 @@ def select_cost_aware(scores: pd.Series, holdings: list[str], n: int, cal: dict,
 # ───────────────────────── 시뮬레이션 ─────────────────────────
 def simulate(schedule: list[tuple[pd.Timestamp, list[str]]], open_: pd.DataFrame,
              close: pd.DataFrame, end=None, execute_at: str = C.EXECUTE_AT, capital: float = C.SEED,
-             buy_cost: float = C.BUY_COST, sell_cost: float = C.SELL_COST):
+             buy_cost: float = C.BUY_COST, sell_cost: float = C.SELL_COST, etf_codes: set | None = None,
+             etf_buy: float = 0.00065, etf_sell: float = 0.00065):
     """schedule: [(신호일, 목표 종목들)]
     execute_at="close": 신호일 종가에 매매(시간외 종가) / "next_open": 다음 거래일 시가에 매매.
     capital 원으로 시작, **정수 주식 수**로 매매 (남는 돈은 현금).
@@ -287,7 +288,7 @@ def simulate(schedule: list[tuple[pd.Timestamp, list[str]]], open_: pd.DataFrame
                 if np.isnan(px):
                     continue  # 거래정지 등 → 보유 유지
                 sh = pos.pop(c)
-                cash += sh * px * (1 - sell_cost)
+                cash += sh * px * (1 - (etf_sell if etf_codes and c in etf_codes else sell_cost))
                 trades.append({"date": d, "signal": sig, "code": c, "side": "SELL", "price": float(px),
                                "shares": int(sh)})
             # 매수: 현금을 신규 종목에 균등 배분, 정수 주식
@@ -296,10 +297,11 @@ def simulate(schedule: list[tuple[pd.Timestamp, list[str]]], open_: pd.DataFrame
                 per = cash / len(buys)
                 for c in buys:
                     px = float(o[c])
-                    sh = int(per // (px * (1 + buy_cost)))
+                    bc = etf_buy if etf_codes and c in etf_codes else buy_cost
+                    sh = int(per // (px * (1 + bc)))
                     if sh <= 0:
                         continue
-                    cash -= sh * px * (1 + buy_cost)
+                    cash -= sh * px * (1 + bc)
                     pos[c] = sh
                     trades.append({"date": d, "signal": sig, "code": c, "side": "BUY", "price": px, "shares": sh})
         cl = close_f.loc[d]

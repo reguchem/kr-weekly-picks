@@ -12,12 +12,15 @@ def send_telegram(rec: dict):
         return
     buys = [p for p in rec["picks"] if p["action"] == "BUY"]
     holds = [p for p in rec["picks"] if p["action"] == "HOLD"]
-    lines = [f"[주간 3종목] {rec['signal_date']} ({rec['strategy_label']})"]
+    lines = [f"[주간 추천] {rec['signal_date']} (종목 3 + 테마 ETF 2)"]
+    if rec.get("market_ok") is False:
+        lines.append(f"이번 주: 현금 보유 — KOSPI가 {rec.get('market_ma')}일 평균선 아래")
     if rec["sells"]:
         lines.append("편출: " + ", ".join(f"{s['name']}({s['code']})" for s in rec["sells"]))
     if buys:
         lines.append("신규 편입: " + ", ".join(
-            f"{p['name']}({p['code']}, {p.get('sector') or ''}) 종가 {p['close']:,.0f}원" for p in buys))
+            f"{p['name']}({p['code']}, {'ETF' if p.get('type') == 'etf' else (p.get('sector') or '')}) "
+            f"종가 {p['close']:,.0f}원" + (f" · {p['shares']}주" if p.get('shares') else "") for p in buys))
     if holds:
         lines.append("유지: " + ", ".join(p["name"] for p in holds))
     if not rec["sells"] and not buys:

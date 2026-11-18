@@ -19,7 +19,8 @@ import pandas as pd
 
 from . import config as C
 from .data import (get_universe, get_price_panel, get_ohlcv, get_fundamentals, get_sectors,
-                   get_flow_panel, SYNTHETIC)
+                   get_flow_panel, get_theme_etfs, SYNTHETIC)
+from .etf import EtfFactors, etf_select, market_ok, ETF_SELL, ETF_BUY
 from .notify import send_telegram, send_warnings
 from . import llm
 from .strategy import (STRATEGIES, Factors, score, select, select_cost_aware, expected, simulate,
@@ -60,25 +61,42 @@ def load_sectors(refresh: bool) -> dict:
     return json.loads(SECTOR_CACHE.read_text()) if SECTOR_CACHE.exists() else {}
 
 
+def _prev_picks(recs, kind):
+    w = recs["weeks"][-1] if recs["weeks"] else None
+    return [p for p in (w["picks"] if w else []) if p.get("type", "stock") == kind]
+
+
 def build_market(recs: dict, last_day: pd.Timestamp, refresh_sectors: bool) -> dict:
+    # 업종 분류(FDR→KRX 비로그인)는 KRX 로그인 조회보다 먼저: 비로그인 요청이 로그인 세션을 끊는 것으로 보임
+    sectors = load_sectors(refresh_sectors)
+    kospi = get_ohlcv("KOSPI", 300)["close"].loc[:last_day]
     uni = get_universe(C.UNIVERSE_SIZE)
     names = dict(zip(uni["code"], uni["name"]))
-    for w in recs["weeks"][-1:]:
-        for p in w["picks"]:
-            names.setdefault(p["code"], p["name"])
+    for p in _prev_picks(recs, "stock"):
+        names.setdefault(p["code"], p["name"])
     px = get_price_panel(list(names), 300)
     close = px["close"].loc[:last_day]
+    # 테마 ETF
+    etfs = get_theme_etfs(80)
+    enames = dict(zip(etfs["code"], etfs["name"]))
+    for p in _prev_picks(recs, "etf"):
+        enames.setdefault(p["code"], p["name"])
+    epx = get_price_panel(list(enames), 300)
+    E = EtfFactors(epx["close"].loc[:last_day], epx["volume"].loc[:last_day])
+    # 수급 (KRX 로그인 → 실패 시 네이버)
     start = str((last_day - pd.Timedelta(days=60)).date())
-    flow = get_flow_panel(list(names), start, str(last_day.date()))           # pykrx(KRX)
+    flow = get_flow_panel(list(names), start, str(last_day.date()))
     if flow is None:
-        flow = get_flow_panel(list(names), start, str(last_day.date()), recent_only=True)  # 네이버
-    sectors = load_sectors(refresh_sectors)
+        flow = get_flow_panel(list(names), start, str(last_day.date()), recent_only=True)
     F = Factors(close, px["volume"].loc[:last_day], flow, sectors)
     t = close.index[-1]
     f = F.at(t)
     sec = sector_strength(f) if f["sector"].notna().any() else pd.DataFrame()
-    return {"names": names, "close": close, "F": F, "f": f, "t": t, "flow": flow,
-            "sectors": sectors, "sector_table": sec}
+    ma = kospi.rolling(C.MARKET_MA).mean().iloc[-1] if C.MARKET_MA else np.nan
+    return {"names": names, "enames": enames, "close": close, "F": F, "f": f, "t": t, "flow": flow,
+            "sectors": sectors, "sector_table": sec, "E": E, "eclose": E.close, "kospi": kospi,
+            "market_ok": market_ok(kospi, C.MARKET_MA, t),
+            "kospi_now": float(kospi.iloc[-1]), "kospi_ma": None if np.isnan(ma) else float(ma)}
 
 
 def _sector_rows(sec: pd.DataFrame, n=12):
@@ -89,84 +107,110 @@ def _sector_rows(sec: pd.DataFrame, n=12):
 
 # ───────────────────────── 신규 추천 ─────────────────────────
 def make_recommendation(recs: dict, M: dict) -> dict | None:
-    strat = _load(STRAT_PATH, {}).get("strategy", C.DEFAULT_STRATEGY)
-    if strat not in STRATEGIES:
-        strat = C.DEFAULT_STRATEGY
+    st = _load(STRAT_PATH, {})
+    strat = st.get("strategy") if C.STRATEGY_MODE == "auto" and st.get("strategy") in STRATEGIES \
+        else C.DEFAULT_STRATEGY
     fn, label, desc, buffer = STRATEGIES[strat]
-    names, f, t = M["names"], M["f"], M["t"]
-    prev = recs["weeks"][-1] if recs["weeks"] else None
-    holdings = [p["code"] for p in prev["picks"]] if prev else []
+    cal = st.get("calibration") if st.get("strategy") == strat else None
+    names, enames, f, t = M["names"], M["enames"], M["f"], M["t"]
+    prev_s = [p["code"] for p in _prev_picks(recs, "stock")]
+    prev_e = [p["code"] for p in _prev_picks(recs, "etf")]
+    prev_all = {p["code"]: p for k in ("stock", "etf") for p in _prev_picks(recs, k)}
     fund = get_fundamentals(t)
 
     # 1) 뉴스·정세 브리핑 (Claude API, 선택) → 업종 전망 보정
     brief = None
     if len(M["sector_table"]):
-        hold_info = [{"name": names.get(c, c), "sector": M["sectors"].get(c)} for c in holdings]
+        hold_info = [{"name": prev_all[c]["name"], "sector": M["sectors"].get(c) or "ETF"} for c in prev_all]
         brief = llm.market_brief(str(t.date()), _sector_rows(M["sector_table"]), hold_info)
     ctx = {"sector_tilt": (brief or {}).get("sector_outlook") or {}}
     s = score(strat, f, fund, ctx)
-    if s is None or len(s) < C.N_PICKS:
-        print("점수 계산 실패 — 추천을 건너뜁니다")
-        return None
-    # 현재 평가금액(원) → 종목당 금액, 살 수 있는 주가 상한
-    equity = (_load(PERF_PATH, {}).get("value") or C.SEED)
-    slot = equity / C.N_PICKS
-    afford = set(s.index[f["close"].reindex(s.index) <= slot * C.MAX_PRICE_FRACTION])
-    cal = _load(STRAT_PATH, {}).get("calibration")
-    if cal and buffer > C.N_PICKS:
-        picks, rank = select_cost_aware(s, holdings, C.N_PICKS, cal, ctx.get("new_ok"), afford)
-    else:
-        new_ok = afford if ctx.get("new_ok") is None else (ctx["new_ok"] & afford)
-        picks, rank = select(s, holdings, C.N_PICKS, buffer, new_ok)
-    n_new = sum(1 for c in picks if c not in holdings)
-    # 신규 편입 종목별 예상 투입금액: 편출 매도금액 + 현금을 신규 종목에 균등 배분
-    prev_hold = {h["code"]: h for h in _load(PERF_PATH, {}).get("holdings", [])}
-    cash_now = _load(PERF_PATH, {}).get("cash", C.SEED if not holdings else 0) or 0
-    freed = cash_now + sum((prev_hold.get(c, {}).get("shares") or 0) * float(f["close"].get(c, 0) or 0)
-                           * (1 - C.SELL_COST) for c in holdings if c not in picks)
-    per_new = (freed / n_new) if n_new else 0
     sec = ctx.get("sectors_table", M["sector_table"])
     sec_rank = {k: int(v) for k, v in sec["rank"].items()} if len(sec) else {}
+
+    # 2) 종목당 금액·가격 상한
+    equity = (_load(PERF_PATH, {}).get("value") or C.SEED)
+    slot = equity / C.SLOTS
+    rank, erank = {}, {}
+    if not M["market_ok"]:
+        stock_picks, etf_picks = [], []                       # 시장 필터: 전부 현금
+    else:
+        stock_picks = []
+        if s is not None and len(s) >= C.N_PICKS:
+            afford = set(s.index[f["close"].reindex(s.index) <= slot * C.MAX_PRICE_FRACTION])
+            if cal and buffer > C.N_PICKS:
+                stock_picks, rank = select_cost_aware(s, prev_s, C.N_PICKS, cal, ctx.get("new_ok"), afford)
+            else:
+                new_ok = afford if ctx.get("new_ok") is None else (ctx["new_ok"] & afford)
+                stock_picks, rank = select(s, prev_s, C.N_PICKS, buffer, new_ok)
+        esc = M["E"].scores(t)
+        erank = {c: i + 1 for i, c in enumerate(esc.index)}
+        eaff = set(esc.index[M["eclose"].loc[t].reindex(esc.index) <= slot * C.MAX_PRICE_FRACTION])
+        etf_picks = etf_select(esc, prev_e, C.N_ETFS, C.N_ETFS * 2, M["E"], t, eaff) if len(esc) else []
+    picks = stock_picks + etf_picks
+    holdings = prev_s + prev_e
+    n_new = sum(1 for c in picks if c not in holdings)
+    prev_hold = {h["code"]: h for h in _load(PERF_PATH, {}).get("holdings", [])}
+    cash_now = _load(PERF_PATH, {}).get("cash", C.SEED if not holdings else 0) or 0
+    last_px = pd.concat([M["close"].iloc[-1], M["eclose"].loc[t]])
+    freed = cash_now + sum((prev_hold.get(c, {}).get("shares") or 0) * float(last_px.get(c, 0) or 0)
+                           * (1 - (ETF_SELL if c in prev_e else C.SELL_COST)) for c in holdings if c not in picks)
+    per_new = (freed / n_new) if n_new else 0
+
+    def shares_for(c, px):
+        is_new = c not in holdings
+        sh = int(per_new // (px * 1.002)) if (is_new and px) else (prev_hold.get(c, {}).get("shares"))
+        return sh, (_f(sh * px, 0) if (sh and px) else None)
 
     def detail(c):
         row = f.loc[c] if c in f.index else None
         fd = fund.loc[c] if fund is not None and c in fund.index else None
         g = (lambda k, nd=4: _f(row[k], nd) if row is not None else None)
         sector = M["sectors"].get(c)
-        px = row["close"] if row is not None else None
-        is_new = c not in holdings
-        sh = int(per_new // (px * (1 + C.BUY_COST))) if (is_new and px) else (prev_hold.get(c, {}).get("shares"))
+        px = float(row["close"]) if row is not None else None
+        sh, amt = shares_for(c, px)
         return {
-            "code": c, "name": names.get(c, c), "rank": rank.get(c), "score": _f(s.get(c), 3),
+            "type": "stock", "code": c, "name": names.get(c, c), "rank": rank.get(c), "score": _f(s.get(c), 3),
             "action": "HOLD" if c in holdings else "BUY",
-            "exp_week": _f(expected(cal, rank.get(c))) if cal else None,
-            "shares": sh, "amount": _f(sh * px, 0) if (sh and px) else None,
+            "exp_week": _f(expected(cal, rank.get(c))) if cal else None, "shares": sh, "amount": amt,
             "sector": sector, "sector_rank": sec_rank.get(sector),
             "close": g("close", 0), "ret_21": g("ret_21"), "ret_63": g("ret_63"), "mom_12_1": g("mom_12_1"),
             "near_high": _f(row["close"] / row["high_252"]) if row is not None else None,
             "tv_ratio": _f(row["tv20"] / row["tv120"], 2) if row is not None else None,
             "flow_f": g("flow_f"), "flow_i": g("flow_i"),
-            "vol_60_ann": _f(row["vol_60"] * np.sqrt(252)) if row is not None else None,
             "per": _f(fd["PER"], 2) if fd is not None else None,
             "pbr": _f(fd["PBR"], 2) if fd is not None else None,
         }
 
+    def edetail(c):
+        r = M["E"].table(t).loc[c] if c in M["E"].close.columns else None
+        px = float(r["close"]) if r is not None else None
+        sh, amt = shares_for(c, px)
+        return {"type": "etf", "code": c, "name": enames.get(c, c), "rank": erank.get(c),
+                "action": "HOLD" if c in holdings else "BUY", "shares": sh, "amount": amt,
+                "close": _f(px, 0), "ret_21": _f(r["r21"]) if r is not None else None,
+                "ret_63": _f(r["r63"]) if r is not None else None,
+                "near_high": _f(r["close"] / r["hi"]) if r is not None else None}
+
+    nm = lambda c: names.get(c) or enames.get(c) or prev_all.get(c, {}).get("name", c)
     rec = {
         "week": _iso_week(t), "signal_date": str(t.date()),
-        "strategy": strat, "strategy_label": label,
-        "picks": [detail(c) for c in picks],
-        "sells": [{"code": c, "name": names.get(c, c), "rank": rank.get(c),
-                   "sector": M["sectors"].get(c)} for c in holdings if c not in picks],
+        "strategy": strat, "strategy_label": label + f" + 테마 ETF {C.N_ETFS}개",
+        "market_ok": M["market_ok"], "kospi_level": _f(M["kospi_now"], 2), "kospi_ma": _f(M["kospi_ma"], 2),
+        "market_ma": C.MARKET_MA,
+        "picks": [detail(c) for c in stock_picks] + [edetail(c) for c in etf_picks],
+        "sells": [{"code": c, "name": nm(c), "type": "etf" if c in prev_e else "stock",
+                   "rank": (erank if c in prev_e else rank).get(c), "sector": M["sectors"].get(c)}
+                  for c in holdings if c not in picks],
         "top10": [{"code": c, "name": names.get(c, c), "score": _f(s[c], 3),
-                   "sector": M["sectors"].get(c)} for c in s.index[:10]],
+                   "sector": M["sectors"].get(c)} for c in (s.index[:10] if s is not None else [])],
         "sectors": _sector_rows(sec) if len(sec) else [],
-        "llm_used": brief is not None,
-        "equity": _f(equity, 0), "round_trip": ROUND_TRIP,
+        "llm_used": brief is not None, "equity": _f(equity, 0), "round_trip": ROUND_TRIP,
         "created_at": datetime.now(KST).strftime("%Y-%m-%d %H:%M"),
     }
     if brief:
         BRIEF_PATH.write_text(json.dumps({"date": str(t.date()), **brief}, ensure_ascii=False, indent=1))
-    print(f"[추천] {rec['signal_date']} {label}: " +
+    print(f"[추천] {rec['signal_date']} 시장필터 {'통과' if M['market_ok'] else '현금'}: " +
           ", ".join(f"{p['name']}({p['action']})" for p in rec["picks"]) +
           (" / 매도: " + ", ".join(x["name"] for x in rec["sells"]) if rec["sells"] else ""))
     return rec
@@ -174,18 +218,21 @@ def make_recommendation(recs: dict, M: dict) -> dict | None:
 
 # ───────────────────────── 매일 보유 종목 점검 ─────────────────────────
 def check_warnings(recs: dict, M: dict) -> dict:
-    """현재 보유(최근 추천) 종목의 하락 위험 신호. 매매는 하지 않고 정보만 표시."""
-    out = {"date": str(M["t"].date()), "items": []}
+    """현재 보유(최근 추천) 종목·ETF의 하락 위험 신호. 매매는 하지 않고 정보만 표시."""
+    out = {"date": str(M["t"].date()), "items": [], "market_ok": M["market_ok"],
+           "kospi": _f(M["kospi_now"], 2), "kospi_ma": _f(M["kospi_ma"], 2), "market_ma": C.MARKET_MA}
     if not recs["weeks"]:
         return out
     weeks = recs["weeks"]
-    close, F, t = M["close"], M["F"], M["t"]
+    F, E, t = M["F"], M["E"], M["t"]
     sec = M["sector_table"]
     sec_rank = {k: int(v) for k, v in sec["rank"].items()} if len(sec) else {}
+    esc = E.scores(t)
+    erank = {c: i + 1 for i, c in enumerate(esc.index)}
     items = []
     for p in weeks[-1]["picks"]:
-        c = p["code"]
-        # 매수 시점: 연속으로 추천된 첫 주
+        c, kind = p["code"], p.get("type", "stock")
+        close = M["eclose"] if kind == "etf" else M["close"]
         buy_w = weeks[-1]
         for w in reversed(weeks):
             if any(q["code"] == c for q in w["picks"]):
@@ -201,26 +248,33 @@ def check_warnings(recs: dict, M: dict) -> dict:
         last, buy, peak = float(ser.iloc[-1]), float(ser.iloc[0]), float(ser.max())
         dd, ret = last / peak - 1, last / buy - 1
         sig, strong = [], False
-        ma20 = F.ma20[c].loc[t] if c in F.ma20 else np.nan
-        if not pd.isna(ma20) and last < ma20:
-            sig.append(f"20일선 이탈 (20일선 {ma20:,.0f}원)")
         if dd <= -0.10:
             sig.append(f"보유 중 고점 대비 {dd:.1%}")
             strong |= dd <= -0.15
-        if F.flow_f is not None and c in F.flow_f:
-            ff = F.flow_f[c].loc[t]
-            raw = M["flow"]["foreign"][c].dropna().tail(5) if c in M["flow"]["foreign"] else pd.Series(dtype=float)
-            if len(raw) == 5 and (raw < 0).all():
-                sig.append("외국인 5일 연속 순매도")
-            elif not pd.isna(ff) and ff < -0.05:
-                sig.append(f"외국인 20일 순매도 우위 ({ff:+.1%})")
-        sr = sec_rank.get(M["sectors"].get(c))
-        if sr and sr > KEEP_SECTORS:
-            sig.append(f"업종({M['sectors'].get(c)}) 강도 {sr}위로 하락")
-        items.append({"code": c, "name": p["name"], "sector": M["sectors"].get(c), "buy_date": str(bd.date()),
-                      "buy": _f(buy, 0), "last": _f(last, 0), "ret": _f(ret), "dd": _f(dd),
+        if kind == "etf":
+            ma60 = E.ma60[c].loc[t] if c in E.ma60 else np.nan
+            if not pd.isna(ma60) and last < ma60:
+                sig.append(f"60일선 이탈 (60일선 {ma60:,.0f}원)")
+            r = erank.get(c)
+            if r is None or r > C.N_ETFS * 2:
+                sig.append("테마 강도 순위 하락" + (f" ({r}위)" if r else " (후보 조건 탈락)"))
+        else:
+            ma20 = F.ma20[c].loc[t] if c in F.ma20 else np.nan
+            if not pd.isna(ma20) and last < ma20:
+                sig.append(f"20일선 이탈 (20일선 {ma20:,.0f}원)")
+            if F.flow_f is not None and c in F.flow_f:
+                ff = F.flow_f[c].loc[t]
+                raw = M["flow"]["foreign"][c].dropna().tail(5) if c in M["flow"]["foreign"] else pd.Series(dtype=float)
+                if len(raw) == 5 and (raw < 0).all():
+                    sig.append("외국인 5일 연속 순매도")
+                elif not pd.isna(ff) and ff < -0.05:
+                    sig.append(f"외국인 20일 순매도 우위 ({ff:+.1%})")
+            sr = sec_rank.get(M["sectors"].get(c))
+            if sr and sr > KEEP_SECTORS:
+                sig.append(f"업종({M['sectors'].get(c)}) 강도 {sr}위로 하락")
+        items.append({"code": c, "name": p["name"], "type": kind, "sector": M["sectors"].get(c) or ("ETF" if kind == "etf" else None),
+                      "buy_date": str(bd.date()), "buy": _f(buy, 0), "last": _f(last, 0), "ret": _f(ret), "dd": _f(dd),
                       "signals": sig, "strong": strong})
-    # 뉴스 점검 (Claude API, 선택)
     news = llm.holdings_news(out["date"], items) if items else None
     for it in items:
         n = (news or {}).get(it["code"])
@@ -228,6 +282,9 @@ def check_warnings(recs: dict, M: dict) -> dict:
             it["signals"].append("뉴스: " + n["reason"])
             it["strong"] |= n["risk"] >= 2
         it["news"] = n
+        if not M["market_ok"]:
+            it["signals"].append(f"시장 필터: KOSPI가 {C.MARKET_MA}일선 아래 (다음 화요일 전량 현금화 대상)")
+            it["strong"] = True
         k = len(it["signals"])
         it["level"] = "경고" if (it.pop("strong") or k >= 2) else ("주의" if k == 1 else "정상")
     out["items"] = items
@@ -296,7 +353,9 @@ def update_performance(recs: dict):
 
     # 실전 포트폴리오: 추천대로 매주 교체 매매(비용 포함)
     sched = [(pd.Timestamp(w["signal_date"]), [p["code"] for p in w["picks"]]) for w in weeks]
-    eq, trades = simulate(sched, open_, close)
+    etf_codes = {p["code"] for w in weeks for p in w["picks"] if p.get("type") == "etf"} | \
+                {x["code"] for w in weeks for x in w["sells"] if x.get("type") == "etf"}
+    eq, trades = simulate(sched, open_, close, etf_codes=etf_codes, etf_buy=ETF_BUY, etf_sell=ETF_SELL)
     perf = {"updated_at": datetime.now(KST).strftime("%Y-%m-%d %H:%M"), "last_date": str(last.date()),
             "summary": summary, "empty": eq.empty}
     if not eq.empty:

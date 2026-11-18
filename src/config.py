@@ -14,7 +14,10 @@ MIN_HISTORY_DAYS = 260       # 최소 상장 기간(거래일)
 SEED = 1_000_000             # 시드머니(원). 수익률·수량 계산을 실제 금액·정수 주식으로 함
 HOLD_WEEKS_EST = 4           # 교체 판단 시 가정하는 평균 보유기간(주): 예상수익 차이 × 4주 > 왕복비용이면 교체
 MAX_PRICE_FRACTION = 0.5     # 주가 ≤ (평가금액/종목수) × 0.5 인 종목만 신규 후보 (1주 단위 자투리 현금 최소화)
-N_PICKS = 3                  # 보유 종목 수
+N_PICKS = 3                  # 개별 종목 수
+N_ETFS = 2                   # 테마 ETF 수
+SLOTS = N_PICKS + N_ETFS     # 자금은 5등분 (종목 3 + ETF 2)
+MARKET_MA = 120              # KOSPI가 이 이동평균선 아래면 전부 현금 (0이면 필터 끔)
 BUFFER_RANK = 15             # 보유 종목은 순위가 이 안에 있으면 계속 보유 (교체 최소화)
 
 # ── 거래 비용 (편도, 비율) ───────────────────────────────
@@ -27,7 +30,7 @@ SELL_COST = FEE + SELL_TAX + SLIPPAGE
 # ── 백테스트 ────────────────────────────────────────────
 BACKTEST_START = "2015-01-01"
 IN_SAMPLE_END = "2021-12-31"  # 전략 선택은 이 날짜까지의 성과로만, 이후는 검증 구간
-DEFAULT_STRATEGY = "theme_flow"   # 테마·수급 전략
+DEFAULT_STRATEGY = "theme_flow_slow"   # 테마·수급(느린 교체) 전략
 STRATEGY_MODE = "fixed"           # "fixed": 위 전략 고정 / "auto": 백테스트 인샘플 1위 자동 선택
 TRADE_WEEKDAY = 1             # 매매 요일 고정: 화요일 (0=월 … 4=금). 화요일 휴장이면 다음 거래일
 WEEKDAYS_KR = ["월", "화", "수", "목", "금"]
