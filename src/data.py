@@ -398,6 +398,8 @@ def get_flow_recent_naver(code: str, pages: int = 2) -> pd.DataFrame | None:
 
 def get_flow_panel(codes, start: str, end: str, recent_only=False, workers=None):
     """{'foreign': DataFrame(date×code), 'inst': ...} — 실패 종목은 빠짐"""
+    if not recent_only and os.environ.get("FLOW_SOURCE") == "naver":
+        return None                          # 빠른 실행용: KRX 대신 네이버 최근 수급만 사용
     if not recent_only and not SYNTHETIC and not (os.environ.get("KRX_ID") and os.environ.get("KRX_PW")):
         print("[flow] KRX 계정 없음 → KRX 수급 조회 생략")
         return None
