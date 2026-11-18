@@ -1,3 +1,6 @@
+[sector] 네이버 업종 0개
+[sector] _sectors_naver: 0 종목, 0 업종
+[sector] _sectors_fdr: 0 종목, 0 업종
 [universe] _universe_naver_api: 645 종목
 [prices] 300/300 종목, 300 거래일
 [etf] 업종·테마 ETF 80개
@@ -21,6 +24,9 @@ KRX 로그인 실패: KRX_ID 또는 KRX_PW 환경 변수가 설정되지 않았�
 [규칙대로] 100만원 → 1,000,000원 (+0.00%)
 [필터 무시했다면] 100만원 → 1,000,000원 (+0.00%)
 KOSPI 같은 기간 -10.37%
+[sector] 네이버 업종 0개
+[sector] _sectors_naver: 0 종목, 0 업종
+[sector] _sectors_fdr: 0 종목, 0 업종
 [universe] _universe_naver_api: 645 종목
 [prices] 300/300 종목, 300 거래일
 [etf] 업종·테마 ETF 80개
