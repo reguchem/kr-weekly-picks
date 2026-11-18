@@ -5,6 +5,7 @@
 """
 from __future__ import annotations
 
+import json
 import os
 import re
 import time
@@ -143,6 +144,8 @@ def _ohlcv_fdr(symbol, count):
 def get_ohlcv(symbol: str, count: int) -> pd.DataFrame:
     """일봉(open, high, low, close, volume). symbol: 6자리 코드 또는 'KOSPI'"""
     if SYNTHETIC:
+        if str(symbol).startswith("4"):
+            return _synthetic_etf_ohlcv(symbol, count)
         return _synthetic_ohlcv(symbol, count)
     last = None
     for fn in (_ohlcv_naver, _ohlcv_fdr):
@@ -347,3 +350,55 @@ def _synthetic_flow(code):
     ret = o["close"].pct_change().fillna(0)
     f = tv * (0.3 * np.sign(ret.rolling(5).mean().fillna(0)) * 0.1 + rng.normal(0, 0.05, len(o)))
     return pd.DataFrame({"foreign": f, "inst": tv * rng.normal(0, 0.05, len(o))}, index=o.index)
+
+
+# ───────────────────────── ETF ─────────────────────────
+ETF_EXCLUDE = r"레버리지|인버스|2X|3X|선물|커버드콜|위클리|채권|국채|금리|달러|원유|골드|금현물|은현물|TDF|혼합|머니마켓|CD금리|KOFR|SOFR"
+
+
+def get_theme_etfs(top_n: int = 80) -> pd.DataFrame:
+    """국내 업종·테마 ETF (레버리지·인버스·채권 등 제외), 시가총액 상위. columns: code, name, mcap"""
+    if SYNTHETIC:
+        return _synthetic_etfs()
+    r = _get("https://finance.naver.com/api/sise/etfItemList.nhn", params={"etfType": 0})
+    try:
+        js = r.json()
+    except Exception:
+        js = json.loads(r.content.decode("euc-kr", errors="ignore"))
+    items = js["result"]["etfItemList"]
+    df = pd.DataFrame([{"code": x["itemcode"], "name": x["itemname"], "tab": x.get("etfTabCode"),
+                        "mcap": _num(x.get("marketSum"))} for x in items])
+    df = df[(df["tab"] == 2) & ~df["name"].str.contains(ETF_EXCLUDE, regex=True)]
+    df = df.sort_values("mcap", ascending=False).head(top_n).reset_index(drop=True)
+    print(f"[etf] 업종·테마 ETF {len(df)}개")
+    return df[["code", "name", "mcap"]]
+
+
+def _synthetic_etfs():
+    names = ["반도체", "2차전지", "조선", "방산", "바이오", "은행", "자동차", "화학", "인터넷", "건설",
+             "철강", "유통", "게임", "전력기기", "화장품", "원전", "AI", "로봇"]
+    rows = []
+    for i, n in enumerate(names):
+        for j, brand in enumerate(["KODEX", "TIGER"]):
+            rows.append({"code": f"{400000 + i * 10 + j:06d}", "name": f"{brand} {n}", "mcap": 1000 - i})
+    return pd.DataFrame(rows)
+
+
+def _synthetic_etf_ohlcv(symbol, count):
+    """테마별로 추세가 지속되는(레짐이 있는) 가상 ETF 시세"""
+    i = (int(symbol) - 400000) // 10
+    rng = np.random.default_rng(1000 + i)
+    n = len(_SYN_DAYS)
+    mkt = np.random.default_rng(7).normal(0.0002, 0.011, n)
+    regime = np.repeat(rng.normal(0, 0.0015, n // 60 + 1), 60)[:n]
+    noise_seed = int(symbol)
+    r = 0.9 * mkt + regime + np.random.default_rng(noise_seed).normal(0, 0.006, n) + rng.normal(0, 0.008, n)
+    start = 400 + 300 * (i % 5)                      # 상장 시점을 다르게
+    close = 10000 * np.exp(np.cumsum(r))
+    close[:start] = np.nan
+    df = pd.DataFrame({"open": close, "high": close, "low": close, "close": close,
+                       "volume": np.where(np.isnan(close), np.nan, 300000)}, index=_SYN_DAYS).dropna()
+    df.index.name = "date"
+    if os.environ.get("SYN_END"):
+        df = df.loc[:os.environ["SYN_END"]]
+    return df.tail(count)

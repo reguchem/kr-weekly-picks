@@ -20,6 +20,7 @@ class Factors:
         self.ret_21 = c / c.shift(21) - 1
         self.ret_63 = c / c.shift(63) - 1
         self.ma20 = c.rolling(20, min_periods=18).mean()
+        self.ma60 = c.rolling(60, min_periods=55).mean()
         self.high_252 = c.rolling(252, min_periods=200).max()
         tv = c * volume.reindex_like(c)
         self.tv120 = tv.rolling(120, min_periods=100).mean()
@@ -49,7 +50,7 @@ class Factors:
             "tv20": self.tv20.loc[t],
             "hist": self.hist.loc[t],
             "ret_21": self.ret_21.loc[t], "ret_63": self.ret_63.loc[t],
-            "ma20": self.ma20.loc[t], "high_252": self.high_252.loc[t], "tv120": self.tv120.loc[t],
+            "ma20": self.ma20.loc[t], "ma60": self.ma60.loc[t], "high_252": self.high_252.loc[t], "tv120": self.tv120.loc[t],
             "flow_f": self.flow_f.loc[t] if self.flow_f is not None and t in self.flow_f.index else np.nan,
             "flow_i": self.flow_i.loc[t] if self.flow_i is not None and t in self.flow_i.index else np.nan,
         })
@@ -122,7 +123,12 @@ def sector_strength(f: pd.DataFrame, ctx=None) -> pd.DataFrame:
     return agg
 
 
-def s_theme_flow(f, fund, ctx=None):
+def s_theme_flow_slow(f, fund, ctx=None):
+    """테마·수급과 같지만 추세 이탈 기준을 60일선으로 완화 → 교체 횟수 축소"""
+    return s_theme_flow(f, fund, ctx, trend_ma="ma60")
+
+
+def s_theme_flow(f, fund, ctx=None, trend_ma="ma20"):
     """업종 추세 + 주도주 + 외국인 수급. 한국 시장의 테마 순환을 따라가되 과열·추세 이탈은 제외."""
     if f["sector"].notna().sum() < len(f) * 0.5:
         return None
@@ -131,7 +137,7 @@ def s_theme_flow(f, fund, ctx=None):
         ctx["sectors_table"] = sec
     keep = set(sec.index[:KEEP_SECTORS])
     g = f[f["sector"].isin(keep)].copy()
-    ok = (g["close"] > g["ma20"]) & (g["ret_21"] <= 0.40) & (g["close"] / g["ma20"] <= 1.25)
+    ok = (g["close"] > g[trend_ma]) & (g["ret_21"] <= 0.40) & (g["close"] / g["ma20"] <= 1.25)
     g = g[ok]
     if g.empty:
         return None
@@ -155,6 +161,8 @@ STRATEGIES = {
     "theme_flow": (s_theme_flow, "테마·수급(업종추세+주도주+외국인)",
                    "강한 업종 상위 3개 → 신고가 근접·거래대금 증가·외국인 순매수 종목, 과열·20일선 이탈 제외",
                    8),
+    "theme_flow_slow": (s_theme_flow_slow, "테마·수급 느린교체(60일선)",
+                        "테마·수급과 같으나 60일선 이탈 시에만 탈락", 8),
     "composite": (s_composite, "복합(가치+저변동+모멘텀)",
                   "저PER·저PBR, 낮은 변동성, 12-1개월 모멘텀 순위의 평균", C.BUFFER_RANK),
     "lowvol_trend": (s_lowvol_trend, "저변동+추세",
@@ -246,7 +254,8 @@ def select_cost_aware(scores: pd.Series, holdings: list[str], n: int, cal: dict,
 
 # ───────────────────────── 시뮬레이션 ─────────────────────────
 def simulate(schedule: list[tuple[pd.Timestamp, list[str]]], open_: pd.DataFrame,
-             close: pd.DataFrame, end=None, execute_at: str = C.EXECUTE_AT, capital: float = C.SEED):
+             close: pd.DataFrame, end=None, execute_at: str = C.EXECUTE_AT, capital: float = C.SEED,
+             buy_cost: float = C.BUY_COST, sell_cost: float = C.SELL_COST):
     """schedule: [(신호일, 목표 종목들)]
     execute_at="close": 신호일 종가에 매매(시간외 종가) / "next_open": 다음 거래일 시가에 매매.
     capital 원으로 시작, **정수 주식 수**로 매매 (남는 돈은 현금).
@@ -278,7 +287,7 @@ def simulate(schedule: list[tuple[pd.Timestamp, list[str]]], open_: pd.DataFrame
                 if np.isnan(px):
                     continue  # 거래정지 등 → 보유 유지
                 sh = pos.pop(c)
-                cash += sh * px * (1 - C.SELL_COST)
+                cash += sh * px * (1 - sell_cost)
                 trades.append({"date": d, "signal": sig, "code": c, "side": "SELL", "price": float(px),
                                "shares": int(sh)})
             # 매수: 현금을 신규 종목에 균등 배분, 정수 주식
@@ -287,10 +296,10 @@ def simulate(schedule: list[tuple[pd.Timestamp, list[str]]], open_: pd.DataFrame
                 per = cash / len(buys)
                 for c in buys:
                     px = float(o[c])
-                    sh = int(per // (px * (1 + C.BUY_COST)))
+                    sh = int(per // (px * (1 + buy_cost)))
                     if sh <= 0:
                         continue
-                    cash -= sh * px * (1 + C.BUY_COST)
+                    cash -= sh * px * (1 + buy_cost)
                     pos[c] = sh
                     trades.append({"date": d, "signal": sig, "code": c, "side": "BUY", "price": px, "shares": sh})
         cl = close_f.loc[d]
