@@ -158,6 +158,27 @@ footer{margin-top:40px;font-size:12px;color:var(--muted);line-height:1.8}
 footer h3{font-size:13px;color:var(--text2);margin:0 0 6px}
 footer ul{margin:0 0 16px;padding-left:18px}
 
+/* 매매 기록 */
+.trade{display:grid;grid-template-columns:1fr 1.3fr;gap:8px;margin-top:auto;padding-top:12px;border-top:1px dashed var(--line);align-items:end}
+.trade .btn{grid-column:1/-1;padding:10px}
+.card details.more{margin-top:8px;margin-bottom:12px;padding-top:0}
+.cards.mine{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.trade label{font-size:11px;color:var(--muted);display:grid;gap:2px}
+.trade input{width:100%;font:inherit;font-size:14px;padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-variant-numeric:tabular-nums}
+.trade input:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.btn{font:inherit;font-size:13px;font-weight:700;padding:8px 14px;border-radius:8px;border:0;cursor:pointer;white-space:nowrap}
+.btn-buy{background:var(--up);color:#fff} .btn-sell{background:var(--text);color:var(--surface)}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--text2);font-weight:600}
+.btn:disabled{opacity:.45;cursor:default}
+.trade .msg{grid-column:1/-1;font-size:12px;min-height:0}
+.ok{color:var(--s3)} .err{color:var(--up)}
+.my-card .pl{font-size:22px;font-weight:700;margin-top:10px;font-variant-numeric:tabular-nums}
+.my-card .pl small{font-size:13px;font-weight:600;margin-left:6px}
+.connect{display:grid;gap:10px;font-size:14px}
+.connect input{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text)}
+.connect ol{margin:0;padding-left:18px;color:var(--text2);font-size:13px;line-height:1.7}
+.log td{font-size:13px}
+
 @media (max-width:900px){
   .kpis{grid-template-columns:repeat(2,1fr)}
   .grid2{grid-template-columns:1fr}
@@ -226,9 +247,16 @@ footer ul{margin:0 0 16px;padding-left:18px}
   <div id="warn"></div>
 </section>
 
+<section id="sec-mine">
+  <div class="sec-h"><h2>내 계좌</h2><span class="aside" id="mine-aside">직접 입력한 매수·매도 기준 · 수수료·거래세 반영</span></div>
+  <div id="mine"></div>
+</section>
+
 <section>
-  <div class="sec-h"><h2>내 성과</h2><span class="aside">시드 100만원 · 추천대로 매매 가정 · 비용 포함</span></div>
-  <div id="perf"></div>
+  <details class="fold" id="perf-fold">
+    <summary><div><h2>추천대로 했다면 (모의)</h2><span class="aside">시드 100만원 · 추천 다음날 시가로 매매했다고 가정</span></div></summary>
+    <div class="body" id="perf"></div>
+  </details>
 </section>
 
 <section>
@@ -363,10 +391,16 @@ function renderCards(recs){
       <div class="ctx">${ctx}</div>
       <div class="kv3">
         <div>기준 종가<b>${num(p.close)}</b></div>
-        <div>수량·금액<b>${p.shares??'–'}주</b><span class="mut num" style="font-size:11px">${manwon(p.amount)}</span></div>
+        <div>수량·금액<b>${p.shares?p.shares+'주':(p.action==='HOLD'?'보유':'–')}</b><span class="mut num" style="font-size:11px">${p.amount?manwon(p.amount):''}</span></div>
         <div>${third[0]}<b>${third[1]}</b></div>
       </div>
       <details class="more"><summary>지표 더보기</summary>${more}</details>
+      <form class="trade" data-code="${p.code}" data-name="${p.name}" data-type="${p.type||'stock'}" onsubmit="return onBuy(event)">
+        <label>수량(주)<input name="qty" type="number" inputmode="numeric" min="1" step="1" value="${p.shares||1}" required></label>
+        <label>내 매수가(원)<input name="price" type="number" inputmode="decimal" min="1" step="any" value="${Math.round(p.close||0)}" required></label>
+        <button class="btn btn-buy">매수</button>
+        <div class="msg"></div>
+      </form>
     </div>`;}).join('')}</div>`;
 }
 
@@ -392,6 +426,157 @@ function renderWarn(warn){
      <details class="more" style="margin-top:8px"><summary>종목별 보기</summary>${table}${note}</details></div>`;
 }
 
+/* ── 내 계좌: 매매 기록 (GitHub 저장소 docs/data/my_trades.json) ── */
+const REPO = (() => { const h = location.hostname; const seg = location.pathname.split('/').filter(Boolean);
+  return h.endsWith('github.io') ? {owner:h.split('.')[0], repo:seg[0]||'kr-weekly-picks'} : {owner:'reguchem', repo:'kr-weekly-picks'}; })();
+const TRADES_PATH = 'docs/data/my_trades.json';
+const MAX_HOLD = 6, FEE = 0.00015, TAX = 0.0020;
+const store = { get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set(k,v){ try{ v==null?localStorage.removeItem(k):localStorage.setItem(k,v); }catch(e){} } };
+let TRADES = [], TRADES_SHA = null, PRICE = {}, PORT = null;
+const b64e = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
+const b64d = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g,'')), c => c.charCodeAt(0)));
+async function gh(method, body){
+  const tok = store.get('kwp_token');
+  const r = await fetch(`https://api.github.com/repos/${REPO.owner}/${REPO.repo}/contents/${TRADES_PATH}`+(method==='GET'?`?ref=main&t=${Date.now()}`:''), {
+    method, cache:'no-store', headers:{Authorization:`Bearer ${tok}`, Accept:'application/vnd.github+json'}, body: body?JSON.stringify(body):undefined});
+  return r;
+}
+async function loadTrades(){
+  if(store.get('kwp_token')){
+    const r = await gh('GET');
+    if(r.ok){ const j = await r.json(); TRADES_SHA = j.sha; TRADES = JSON.parse(b64d(j.content)).trades||[]; return true; }
+    if(r.status===404){ TRADES_SHA = null; TRADES = []; return true; }
+    if(r.status===401){ store.set('kwp_token', null); }
+  }
+  const j = await load('data/my_trades.json'); TRADES = j?.trades||[]; return false;
+}
+async function saveTrades(next, msg){
+  const r0 = await gh('GET'); if(r0.ok){ TRADES_SHA = (await r0.json()).sha; } else if(r0.status===404) TRADES_SHA = null; else throw new Error('읽기 실패 '+r0.status);
+  const body = {message: msg, content: b64e(JSON.stringify({trades: next}, null, 1)), branch:'main'};
+  if(TRADES_SHA) body.sha = TRADES_SHA;
+  const r = await gh('PUT', body);
+  if(!r.ok) throw new Error(r.status===401||r.status===403 ? '토큰 권한을 확인하세요' : '저장 실패 '+r.status);
+  TRADES_SHA = (await r.json()).content.sha; TRADES = next;
+}
+function computePositions(trades){
+  const pos = {}; let realized = 0, cash = 1000000; const closed = [];
+  [...trades].sort((a,b)=> (a.date+a.ts).localeCompare(b.date+b.ts)).forEach(t => {
+    const sh = +t.shares, px = +t.price, etf = t.type==='etf';
+    if(t.side==='BUY'){ const cost = sh*px*(1+FEE); cash -= cost;
+      const p = pos[t.code] ||= {code:t.code, name:t.name, type:t.type||'stock', shares:0, cost:0, first:t.date};
+      p.shares += sh; p.cost += cost; }
+    else { const p = pos[t.code]; if(!p) return; const q = Math.min(sh, p.shares), avg = p.cost/p.shares;
+      const proceeds = q*px*(1-(etf||p.type==='etf'?FEE:FEE+TAX)); const pl = proceeds-avg*q;
+      realized += pl; cash += proceeds; p.shares -= q; p.cost -= avg*q;
+      closed.push({date:t.date, name:p.name, shares:q, buy:avg/(1+FEE), sell:px, pl, pct: pl/(avg*q)});
+      if(p.shares<=0) delete pos[t.code]; }
+  });
+  return {pos, realized, cash, closed};
+}
+const today = () => new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
+function setMsg(form, text, ok){ const m = form.querySelector('.msg'); m.className = 'msg '+(ok?'ok':'err'); m.textContent = text; }
+async function onBuy(e){
+  e.preventDefault(); const f = e.target, btn = f.querySelector('button');
+  if(!store.get('kwp_token')){ setMsg(f,'먼저 아래 "내 계좌"에서 기록 연결을 해주세요.'); document.getElementById('sec-mine').scrollIntoView({behavior:'smooth'}); return false; }
+  const qty = Math.floor(+f.qty.value), price = +f.price.value;
+  if(!(qty>0 && price>0)){ setMsg(f,'수량과 매수가를 확인하세요.'); return false; }
+  const {pos} = computePositions(TRADES);
+  if(!pos[f.dataset.code] && Object.keys(pos).length >= MAX_HOLD){ setMsg(f,`보유 종목이 이미 ${MAX_HOLD}개입니다. 먼저 매도 후 매수하세요.`); return false; }
+  btn.disabled = true; setMsg(f,'저장 중…', true);
+  try{
+    const t = {id: crypto.randomUUID?.()||String(Date.now()), ts:new Date().toISOString(), date: today(), side:'BUY',
+               code:f.dataset.code, name:f.dataset.name, type:f.dataset.type, shares:qty, price};
+    await saveTrades([...TRADES, t], `매수 기록: ${t.name} ${qty}주 @${price}`);
+    PRICE[t.code] = PRICE[t.code] || price;
+    setMsg(f,`${qty}주 매수 기록 완료`, true); renderMine();
+  }catch(err){ setMsg(f, err.message); }
+  btn.disabled = false; return false;
+}
+async function onSell(e){
+  e.preventDefault(); const f = e.target, btn = f.querySelector('button');
+  const {pos} = computePositions(TRADES); const p = pos[f.dataset.code]; if(!p) return false;
+  const qty = Math.min(Math.floor(+f.qty.value), p.shares), price = +f.price.value;
+  if(!(qty>0 && price>0)){ setMsg(f,'수량과 매도가를 확인하세요.'); return false; }
+  btn.disabled = true; setMsg(f,'저장 중…', true);
+  try{
+    const t = {id: crypto.randomUUID?.()||String(Date.now()), ts:new Date().toISOString(), date: today(), side:'SELL',
+               code:p.code, name:p.name, type:p.type, shares:qty, price};
+    await saveTrades([...TRADES, t], `매도 기록: ${p.name} ${qty}주 @${price}`);
+    renderMine(qty===p.shares ? `${p.name} 매도 저장 완료 — 보유 목록에서 삭제했습니다.` : `${p.name} ${qty}주 매도 저장 완료`);
+  }catch(err){ setMsg(f, err.message); btn.disabled = false; }
+  return false;
+}
+async function onDeleteTrade(id){
+  const t = TRADES.find(x=>x.id===id); if(!t) return;
+  if(!confirm(`${t.date} ${t.name} ${t.side==='BUY'?'매수':'매도'} ${t.shares}주 기록을 지울까요?`)) return;
+  try{ await saveTrades(TRADES.filter(x=>x.id!==id), `기록 삭제: ${t.name}`); renderMine('기록을 삭제했습니다.'); }catch(err){ alert(err.message); }
+}
+async function onConnect(e){
+  e.preventDefault(); const v = e.target.tok.value.trim(); if(!v) return false;
+  store.set('kwp_token', v);
+  const ok = await loadTrades();
+  if(ok && store.get('kwp_token')) renderMine('기록 연결 완료'); else { store.set('kwp_token', null); renderMine('토큰을 확인하세요 (Contents 읽기/쓰기 권한 필요)'); }
+  return false;
+}
+function onDisconnect(){ store.set('kwp_token', null); renderMine('이 기기에서 기록 연결을 해제했습니다.'); }
+
+function renderMine(flash){
+  const el = $('#mine'), connected = !!store.get('kwp_token');
+  const {pos, realized, cash, closed} = computePositions(TRADES);
+  const rows = Object.values(pos).map(p => { const last = PRICE[p.code] ?? p.cost/p.shares/(1+FEE);
+    const value = p.shares*last; return {...p, avg:p.cost/p.shares/(1+FEE), last, value, pl:value-p.cost, pct:value/p.cost-1}; });
+  const stockVal = rows.reduce((a,r)=>a+r.value,0), total = stockVal + cash;
+  const evalPL = rows.reduce((a,r)=>a+r.pl,0), allPL = realized + evalPL;
+  const flashHtml = flash ? `<div class="alert-line" style="margin-bottom:12px;background:var(--accent-bg);color:var(--accent)">${flash}</div>` : '';
+  const connect = connected ? '' : `<div class="panel" style="margin-bottom:12px"><form class="connect" onsubmit="return onConnect(event)">
+      <b>기록 연결 (기기마다 한 번)</b>
+      <ol><li>GitHub → Settings → Developer settings → Fine-grained tokens → Generate new token</li>
+          <li>Repository access: <b>${REPO.repo}</b>만 선택 · Permissions: <b>Contents: Read and write</b></li>
+          <li>만든 토큰(github_pat_…)을 아래에 붙여넣기 — 이 브라우저에만 저장됩니다</li></ol>
+      <div style="display:flex;gap:8px"><input name="tok" type="password" placeholder="github_pat_..." style="flex:1"><button class="btn btn-sell">연결</button></div></form></div>`;
+  if(!TRADES.length){
+    el.innerHTML = flashHtml + connect + `<div class="empty">아직 매매 기록이 없습니다. 위 추천 카드에서 <b>수량과 내 매수가</b>를 입력하고 <b>매수</b>를 누르면 여기에 보유 종목과 수익이 나타납니다.</div>`;
+    return;
+  }
+  const k = (l, v, sub) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${sub||''}</div></div>`;
+  const cards = rows.map(r => `<div class="card my-card">
+      <div class="badges"><span class="badge">${r.type==='etf'?'테마 ETF':'종목'}</span><span class="badge">${md(r.first)} 매수</span></div>
+      <div class="nm">${r.name}</div><div class="cd">${r.code}</div>
+      <div class="pl ${r.pl>0?'up':r.pl<0?'down':''}">${sign(r.pl)}${num(r.pl)}원<small>${pctP(r.pct)}</small></div>
+      <div class="kv3">
+        <div>보유<b>${r.shares}주</b></div>
+        <div>평균 매수가<b>${num(r.avg)}</b></div>
+        <div>현재가<b>${num(r.last)}</b></div>
+      </div>
+      <form class="trade" data-code="${r.code}" onsubmit="return onSell(event)">
+        <label>수량(주)<input name="qty" type="number" inputmode="numeric" min="1" max="${r.shares}" step="1" value="${r.shares}" required></label>
+        <label>내 매도가(원)<input name="price" type="number" inputmode="decimal" min="1" step="any" value="${Math.round(r.last)}" required></label>
+        <button class="btn btn-sell"${connected?'':' disabled'}>저장 및 삭제</button>
+        <div class="msg"></div>
+      </form>
+    </div>`).join('');
+  const log = [...TRADES].sort((a,b)=>(b.date+b.ts).localeCompare(a.date+a.ts)).slice(0,12).map(t=>`<tr>
+      <td class="l"><span class="badge ${t.side==='BUY'?'BUY':''}">${t.side==='BUY'?'매수':'매도'}</span> ${t.name} <span class="mut" style="font-size:12px">${md(t.date)}</span></td>
+      <td class="mob2 lft">${t.shares}주 · ${num(t.price)}원</td>
+      <td class="rt mobr">${connected?`<button class="btn btn-ghost" style="padding:3px 8px;font-size:11px" onclick="onDeleteTrade('${t.id}')">삭제</button>`:''}</td></tr>`).join('');
+  const done = closed.length ? `<table class="stack" style="margin-top:4px"><thead><tr><th class="l">종목</th><th>수량</th><th>매수→매도</th><th>실현 손익</th></tr></thead>
+      <tbody>${[...closed].reverse().slice(0,10).map(c=>`<tr><td class="l"><b>${c.name}</b> <span class="mut" style="font-size:12px">${md(c.date)} 매도</span></td><td class="mob2" data-k="수량">${c.shares}주</td><td class="mob2 rt">${num(c.buy)} → ${num(c.sell)}</td><td class="rt mobr">${pct(c.pct)} <span class="num ${c.pl>0?'up':c.pl<0?'down':''}">${sign(c.pl)}${num(c.pl)}원</span></td></tr>`).join('')}</tbody></table>` : '';
+  $('#mine-aside').textContent = `보유 ${rows.length}/${MAX_HOLD}종목 · ${PORT?.asof?md(PORT.asof)+' 종가 기준':'최근 가격 기준'}`;
+  el.innerHTML = flashHtml + connect + `<div class="kpis">
+      ${k('총 수익 (실현+평가)', `<span class="${allPL>0?'up':allPL<0?'down':''}">${sign(allPL)}${num(allPL)}원</span>`, `시드 100만원 대비 ${pctP(allPL/1e6)}`)}
+      ${k('실현 손익 (매도 완료)', `<span class="${realized>0?'up':realized<0?'down':''}">${sign(realized)}${num(realized)}원</span>`, `매도 ${closed.length}건`)}
+      ${k('평가 손익 (보유 중)', `<span class="${evalPL>0?'up':evalPL<0?'down':''}">${sign(evalPL)}${num(evalPL)}원</span>`, `보유 평가 ${won(stockVal)}`)}
+      ${k('총자산', won(total), `현금 ${won(cash)}`)}
+    </div>
+    ${rows.length?`<div class="cards mine" style="margin-top:12px">${cards}</div>`:`<div class="empty" style="margin-top:12px">보유 종목이 없습니다.</div>`}
+    <div class="grid2" style="margin-top:12px">
+      <div class="panel"><b style="font-size:14px">매도 완료 내역</b>${done||'<div class="mut" style="font-size:13px;margin-top:8px">아직 없습니다.</div>'}</div>
+      <div class="panel"><b style="font-size:14px">최근 기록</b><table class="log stack" style="margin-top:4px"><tbody>${log}</tbody></table>
+        ${connected?`<div class="note"><a href="#" onclick="onDisconnect();return false" class="mut">이 기기 기록 연결 해제</a></div>`:''}</div>
+    </div>
+    <div class="note">현재가는 매일 17:00 장마감 점검 때 갱신됩니다(그 전에는 매수가로 표시). 손익에는 수수료 0.015%와 주식 매도 시 거래세 0.20%를 반영합니다.</div>`;
+}
+
 /* ── 성과 ── */
 function renderPerf(perf){
   const el = $('#perf');
@@ -411,9 +596,11 @@ function renderPerf(perf){
         <td data-k="수량" class="mob2">${h.shares??'–'}주</td><td data-k="가격" class="mob2 rt">${num(h.buy_price)} → ${num(h.last)}</td>
         <td data-k="평가" class="mob2 lft">${won(h.value)}</td><td class="rt mobr">${pct(h.ret)}</td></tr>`).join('')}</tbody></table>`:''}
     <div class="note">${md(perf.last_date)} 종가 기준</div></div>`;
-  lineChart($('#c-perf'), perf.curve.dates, [
+  const draw = () => lineChart($('#c-perf'), perf.curve.dates, [
     {label:'내 포트폴리오', data:perf.curve.portfolio, color:css('--s1')},
     {label:'KOSPI', data:perf.curve.kospi, color:css('--bench'), dash:[5,4], width:1.5}]);
+  let drawn = false;
+  $('#perf-fold').addEventListener('toggle', () => { if($('#perf-fold').open && !drawn){ drawn = true; draw(); } });
 }
 
 /* ── 시장 ── */
@@ -486,7 +673,12 @@ function renderBT(bt){
 (async () => {
   const [recs, perf, bt, warn, brief] = await Promise.all(['data/recommendations.json','data/performance.json','data/backtest.json','data/warnings.json','data/brief.json'].map(load));
   $('#meta').textContent = `업데이트 ${perf?.updated_at || recs?.updated_at || '–'} · 추천: 화 08:00(월 종가)·목 17:00(목 종가) → 다음 거래일 시가 매매 · 보유 종목 매일 점검`;
-  renderHero(recs, warn, perf); renderCards(recs); renderWarn(warn); renderPerf(perf); renderMarket(brief, recs); renderHist(recs); renderBT(bt);
+  PORT = await load('data/my_portfolio.json');
+  (recs?.weeks?.at(-1)?.picks||[]).forEach(p => { if(p.close) PRICE[p.code] = p.close; });
+  (warn?.items||[]).forEach(i => { if(i.last) PRICE[i.code] = i.last; });
+  (PORT?.positions||[]).forEach(p => { if(p.last) PRICE[p.code] = p.last; });
+  await loadTrades();
+  renderHero(recs, warn, perf); renderCards(recs); renderWarn(warn); renderMine(); renderPerf(perf); renderMarket(brief, recs); renderHist(recs); renderBT(bt);
 })();
 </script>
 </body>
