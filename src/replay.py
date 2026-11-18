@@ -23,11 +23,12 @@ weekly.PERF_PATH = tmp / "perf.json"       # 실제 운용 기록을 건드리�
 weekly.BRIEF_PATH = tmp / "brief.json"
 
 
-def evaluate(rec, latest):
+def evaluate(rec, latest, opens):
+    """추천 다음 거래일 시가에 사서 지금 종가로 평가 (수량은 기준 종가로 추정한 값 사용)"""
     rows, invest, now_val = [], 0.0, 0.0
     for p in rec["picks"]:
         c = p["code"]
-        sh, entry = p.get("shares") or 0, p.get("close")
+        sh, entry = p.get("shares") or 0, opens.get(c)
         last = latest.get(c)
         if not sh or not entry or last is None:
             continue
@@ -59,24 +60,29 @@ def run(dates):
             M2 = dict(M, market_ok=ok)
             rec = weekly.make_recommendation({"weeks": []}, M2)
             codes = [p["code"] for p in rec["picks"]]
-            latest = {}
+            latest, opens = {}, {}
             for c in codes:
-                o = get_ohlcv(c, 10)
+                o = get_ohlcv(c, 40)
                 if len(o):
                     latest[c] = float(o["close"].iloc[-1])
                     case["last_date"] = str(o.index[-1].date())
-            rows, total = evaluate(rec, latest)
+                    after = o[o.index > t]
+                    if len(after):
+                        opens[c] = float(after["open"].iloc[0])
+                        case["trade_date"] = str(after.index[0].date())
+            rows, total = evaluate(rec, latest, opens)
             sc_n = len(M2["f"])
             print(f"[{name}] 업종 분류 {len(M['sectors'])}종목, 점수 대상 {sc_n}, 상위 업종 "
                   f"{list(M['sector_table'].index[:5]) if len(M['sector_table']) else []}, "
                   f"ETF 후보 {len(M['E'].scores(t))}")
             case[name] = {"picks": rows, "total": total, "ret": total / C.SEED - 1}
         kc = k["close"]
-        k0 = float(kc.loc[:t].iloc[-1])
+        ko = k["open"]
+        k0 = float(ko[ko.index > t].iloc[0]) if (ko.index > t).any() else float(kc.loc[:t].iloc[-1])
         case["kospi_ret"] = float(kc.iloc[-1]) / k0 - 1
         case["kospi_last_date"] = str(kc.index[-1].date())
         out["cases"].append(case)
-        print(f"\n=== {case['date']} (화) 추천 → {case.get('last_date', '')} 기준 ===")
+        print(f"\n=== {case['date']} 종가 기준 추천 → {case.get('trade_date', '다음날')} 시가 매수 → {case.get('last_date', '')} 종가 평가 ===")
         print(f"시장 필터: KOSPI {case['kospi']:,.0f} / {C.MARKET_MA}일선 {case['kospi_ma'] or 0:,.0f} → "
               f"{'투자' if case['market_ok'] else '현금 보유'}")
         for name in ("rule", "ignore_filter"):
@@ -85,7 +91,7 @@ def run(dates):
             v = case[name]
             print(f"[{'규칙대로' if name == 'rule' else '필터 무시했다면'}] 100만원 → {v['total']:,.0f}원 ({v['ret']:+.2%})")
             for r in v["picks"]:
-                print(f"   {r['type']:5s} {r['name']}({r['code']}) {r['shares']}주 {r['entry']:,.0f}→{r['last']:,.0f}원 "
+                print(f"   {r['type']:5s} {r['name']}({r['code']}) {r['shares']}주 시가 {r['entry']:,.0f}→{r['last']:,.0f}원 "
                       f"{r['ret']:+.2%} 손익 {r['pnl']:+,.0f}원")
         print(f"KOSPI 같은 기간 {case['kospi_ret']:+.2%}")
     C.DOCS_DATA.mkdir(parents=True, exist_ok=True)
