@@ -1,6 +1,126 @@
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:14: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  s1 = min(cur + pd.DateOffset(years=2) - pd.Timedelta(days=1), e0)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/tests/krx_debug.py:20: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  cur = s1 + pd.Timedelta(days=1)
 KRX 로그인 시도...
   로그인 ID: minchaa
 KRX 로그인 완료.
-  로그인 시간: 2026-11-18 05:36:33
-  만료 시간: 2026-11-18 06:36:33
-80회 내 실패 없음
+  로그인 시간: 2026-11-18 05:42:22
+  만료 시간: 2026-11-18 06:42:22
+[universe] _universe_naver_api: 645 종목
+유니버스 앞 10: ['005930', '000660', '402340', '373220', '207940', '009150', '105560', '005380', '032830', '068270']
+005930 2014-09-01 2016-08-31 행 493
+005930 2016-09-01 2018-08-31 행 487
+005930 2018-09-01 2020-08-31 행 491
+005930 2020-09-01 2022-08-31 행 494
+005930 2022-09-01 2024-08-31 행 492
+005930 2024-09-01 2026-08-31 행 483
+005930 2026-09-01 2026-11-17 행 52
+000660 2014-09-01 2016-08-31 행 493
+000660 2016-09-01 2018-08-31 행 490
+000660 2018-09-01 2020-08-31 행 491
+000660 2020-09-01 2022-08-31 행 494
+000660 2022-09-01 2024-08-31 행 492
+000660 2024-09-01 2026-08-31 행 483
+000660 2026-09-01 2026-11-17 행 52
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+402340 2014-09-01 2016-08-31 행 0
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+402340 2016-09-01 2018-08-31 행 0
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+402340 2018-09-01 2020-08-31 행 0
+402340 2020-09-01 2022-08-31 행 188
+402340 2022-09-01 2024-08-31 행 492
+402340 2024-09-01 2026-08-31 행 483
+402340 2026-09-01 2026-11-17 행 52
+--- get_flow_history 메인 스레드
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+373220 1173 None
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+207940 2421 None
+009150 2995 None
+--- get_flow_panel(스레드 1개)
+[flow] 10/10 종목
+(2995, 10)
