@@ -1,11 +1,9 @@
-"""매 거래일 15:33(KST) 실행: (매매 요일이면) 이번 주 3종목 추천 + 전체 성과 갱신.
+"""주 2회 추천 + 매일 점검.
 
-매매 요일은 백테스트가 고른 요일(docs/data/strategy.json의 weekday). 그 요일이 휴장이면 다음 거래일.
-추천은 당일 종가 기준이며, 15:30~16:00 시간외 종가 매매로 '당일 종가'에 즉시 체결하는 것을 가정합니다.
-
-실행: python -m src.weekly            # 매매 요일에만 신규 추천
-      FORCE=1 python -m src.weekly    # 요일 무관하게 이번 주 추천 생성(이번 주 추천이 없을 때)
-산출물: docs/data/recommendations.json, docs/data/performance.json
+- 화요일 07:50 KST 실행: 월요일 종가 기준 추천 → 화요일 09:00 시가 매매
+- 평일 16:50 KST 실행: 보유 종목 점검·성과 갱신, 목요일은 목요일 종가 기준 추천 → 금요일 09:00 시가 매매
+수동: SLOT=tue|thu python -m src.weekly
+산출물: docs/data/recommendations.json, performance.json, warnings.json, brief.json
 """
 from __future__ import annotations
 
@@ -43,6 +41,10 @@ def _load(path, default):
 def _iso_week(d: pd.Timestamp):
     y, w, _ = d.isocalendar()
     return f"{y}-W{w:02d}"
+
+
+def _slot_key(sig: pd.Timestamp, slot: str):
+    return f"{_iso_week(sig)}-{slot}"
 
 
 def _f(x, nd=4):
@@ -226,7 +228,8 @@ def make_recommendation(recs: dict, M: dict) -> dict | None:
 
     nm = lambda c: names.get(c) or enames.get(c) or prev_all.get(c, {}).get("name", c)
     rec = {
-        "week": _iso_week(t), "signal_date": str(t.date()),
+        "week": _slot_key(t, M.get("slot", "")), "slot": M.get("slot"), "signal_date": str(t.date()),
+        "trade_date": M.get("trade_date"),
         "strategy": strat, "strategy_label": label + f" + 테마 ETF {C.N_ETFS}개",
         "mode": "bear" if bear else "normal", "stopped": [nm(c) for c in stopped],
         "kospi_r63": _f(k63), "market_ok": M["market_ok"], "kospi_level": _f(M["kospi_now"], 2), "kospi_ma": _f(M["kospi_ma"], 2),
@@ -354,14 +357,14 @@ def update_performance(recs: dict):
     def ret_from(i0, series_close, entry):
         out = {}
         for key, h in C.HORIZONS.items():
-            j = i0 + h  # 진입일 종가 → h거래일 뒤 종가
+            j = i0 + h - 1  # 진입일 시가 → h번째 거래일 종가
             out[key] = _f(series_close.iloc[j] / entry - 1) if j < len(days) and entry else None
         out["now"] = _f(series_close.ffill().iloc[-1] / entry - 1) if entry else None
         return out
 
     for w in weeks:
         sig = pd.Timestamp(w["signal_date"])
-        i0 = days.searchsorted(sig, side="left")   # 추천일 당일 종가 체결
+        i0 = days.searchsorted(sig, side="right")  # 추천 다음 거래일 시가 체결
         if i0 >= len(days):
             w["entry_date"] = None
             for p in w["picks"]:
@@ -371,11 +374,11 @@ def update_performance(recs: dict):
         w["entry_date"] = str(days[i0].date())
         for p in w["picks"]:
             c = p["code"]
-            entry = close[c].iloc[i0] if c in close else np.nan
+            entry = open_[c].iloc[i0] if c in open_ else np.nan
             entry = None if pd.isna(entry) else float(entry)
             p["entry"] = _f(entry, 0)
             p["ret"] = ret_from(i0, close[c], entry) if c in close else None
-        kentry = float(kc.iloc[i0]) if not pd.isna(kc.iloc[i0]) else None
+        kentry = float(ko.iloc[i0]) if not pd.isna(ko.iloc[i0]) else None
         w["kospi"] = ret_from(i0, kc, kentry)
         w["avg"] = {key: _f(np.mean(v)) if (v := [p["ret"][key] for p in w["picks"]
                                                   if p["ret"] and p["ret"][key] is not None]) else None
@@ -443,31 +446,47 @@ def _wait_today_bar(today: pd.Timestamp, minutes=12) -> pd.Timestamp:
 LEVEL = {"정상": 0, "주의": 1, "경고": 2}
 
 
+def _slot_now(now: datetime) -> str | None:
+    """실행 시각으로 추천 슬롯 판단: 화요일 오전 → 'tue'(월요일 종가 기준), 목요일 오후 → 'thu'(목요일 종가 기준)"""
+    forced = os.environ.get("SLOT")
+    if forced in ("tue", "thu"):
+        return forced
+    if now.weekday() == 1 and now.hour < 12:
+        return "tue"
+    if now.weekday() == 3 and now.hour >= 15:
+        return "thu"
+    return None
+
+
 def run():
     C.DOCS_DATA.mkdir(parents=True, exist_ok=True)
     recs = _load(REC_PATH, {"weeks": []})
-    trade_wd = C.TRADE_WEEKDAY
     now = datetime.now(KST)
     today = pd.Timestamp(now.date())
-    force = os.environ.get("FORCE") == "1"
+    slot = _slot_now(now)
     done = {w["week"] for w in recs["weeks"]}
-    want = (now.weekday() >= trade_wd or force) and _iso_week(today) not in done
-    last_day = _wait_today_bar(today)
-    is_trading_day = last_day.normalize() == today
-    if not is_trading_day and not force:
+    if slot == "thu":
+        last_day = _wait_today_bar(today)          # 목요일 종가가 올라올 때까지 대기
+    else:
+        last_day = get_ohlcv("KOSPI", 10).index[-1]  # 화요일 오전: 최신 종가 = 월요일(또는 직전 거래일)
+    key = _slot_key(last_day, slot) if slot else None
+    want = bool(slot) and key not in done
+    if not slot and last_day.normalize() != today:
         print(f"오늘은 휴장 — 성과만 갱신 (마지막 거래일 {last_day.date()})")
         update_performance(recs)
         return
 
     M = build_market(recs, last_day, refresh_sectors=want)
+    M["slot"] = slot
     if want:
+        nxt = pd.bdate_range(last_day + pd.Timedelta(days=1), periods=1)[0]
+        M["trade_date"] = str(nxt.date())                # 다음 거래일(공휴일은 반영 못 할 수 있음)
         rec = make_recommendation(recs, M)
         if rec:
             recs["weeks"].append(rec)
             send_telegram(rec)
     else:
-        print(f"신규 추천 없음 (오늘 {C.WEEKDAYS_KR[now.weekday()] if now.weekday() < 5 else '주말'}, "
-              f"매매요일 {C.WEEKDAYS_KR[trade_wd]}, 이번 주 추천 {'있음' if _iso_week(today) in done else '없음'})")
+        print(f"신규 추천 없음 (슬롯 {slot}, 이미 추천함: {key in done if key else '-'})")
 
     # 매일 보유 종목 점검 → 새로 생기거나 심해진 경고만 알림
     prev = {i["code"]: i["level"] for i in _load(WARN_PATH, {}).get("items", [])}

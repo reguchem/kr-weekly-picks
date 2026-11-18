@@ -169,9 +169,9 @@ STRATEGIES = {
                      "200일선 위 종목 중 변동성 낮고 6개월 추세 강한 종목", C.BUFFER_RANK),
     "momentum": (s_momentum, "모멘텀", "12-1개월 수익률 상위", C.BUFFER_RANK),
     "value": (s_value, "가치", "저PER·저PBR 상위", C.BUFFER_RANK),
-    "reversal": (s_reversal, "단기반전(매주 전량교체)", "지난주 낙폭 상위 — 매주 3종목 모두 교체", C.N_PICKS),
-    "composite_nobuffer": (s_composite, "복합(매주 전량교체)",
-                           "복합 점수 상위 3종목을 매주 새로 매수 — 버퍼 효과 비교용", C.N_PICKS),
+    "reversal": (s_reversal, "단기반전(매번 전량교체)", "지난주 낙폭 상위 — 매번 3종목 모두 교체", C.N_PICKS),
+    "composite_nobuffer": (s_composite, "복합(매번 전량교체)",
+                           "복합 점수 상위 3종목을 매번 새로 매수 — 버퍼 효과 비교용", C.N_PICKS),
 }
 
 
@@ -332,6 +332,24 @@ def simulate(schedule: list[tuple[pd.Timestamp, list[str]]], open_: pd.DataFrame
         cl = close_f.loc[d]
         eq[d] = cash + sum(sh * cl.get(c, 0) for c, sh in pos.items())
     return pd.Series(eq), trades
+
+
+def signal_dates(index: pd.DatetimeIndex) -> list[pd.Timestamp]:
+    """주 2회 신호일: ① 월요일 종가(월요일 휴장이면 그 이전 마지막 거래일) ② 목요일 종가(화~목 중 마지막 거래일).
+    매매는 각 신호일의 다음 거래일 시가."""
+    idx = pd.DatetimeIndex(index)
+    out = set()
+    weeks = pd.Series(idx, index=idx).groupby([idx.isocalendar().year.values, idx.isocalendar().week.values])
+    for _, g in weeks:
+        days = pd.DatetimeIndex(g.values)
+        mon = days[0] - pd.Timedelta(days=days[0].weekday())          # 그 주 월요일 날짜
+        a = idx[idx <= mon]                                           # 월요일까지의 마지막 거래일
+        if len(a):
+            out.add(a[-1])
+        b = days[(days.weekday >= 1) & (days.weekday <= 3)]           # 화~목 중 마지막 거래일
+        if len(b):
+            out.add(b[-1])
+    return sorted(out)
 
 
 def weekly_signal_dates(index: pd.DatetimeIndex, weekday: int | None = None) -> list[pd.Timestamp]:

@@ -14,7 +14,7 @@ import pandas as pd
 from . import config as C
 from .data import get_universe, get_price_panel, get_ohlcv, get_fundamentals, get_sectors, get_flow_panel
 from .strategy import (STRATEGIES, Factors, score, select, select_cost_aware, fit_calibration, simulate,
-                       weekly_signal_dates, metrics)
+                       weekly_signal_dates, signal_dates, metrics)
 
 KST = timezone(timedelta(hours=9))
 FUND_CACHE = C.CACHE / "fundamentals.csv.gz"
@@ -132,8 +132,8 @@ def run():
     grid = {}   # (전략, 요일) → 결과
     cals = {}
     afford_px = C.SEED / C.N_PICKS * C.MAX_PRICE_FRACTION
-    for wd in range(5):
-        dates = [d for d in weekly_signal_dates(close.index, wd) if d >= t0]
+    for wd in range(1):                     # 일정: 주 2회(월 종가·목 종가) 고정
+        dates = [d for d in signal_dates(close.index) if d >= t0]
         for name in names:
             _, label, desc, buffer = STRATEGIES[name]
             # 1) 날짜별 점수 (보유와 무관하므로 한 번만 계산)
@@ -173,7 +173,7 @@ def run():
                 "out_sample": metrics(eq[eq.index > is_end], kospi),
                 "buys_per_year": round(buys / max(full.get("years", 1), 0.1), 1),
                 "final_krw": round(float(eq.iloc[-1])), "eq": eq}
-            print(f"[{C.WEEKDAYS_KR[wd]}] {label:24s} CAGR {full['cagr']:+.1%}  Sharpe {full['sharpe']:.2f}  "
+            print(f"[월·목] {label:24s} CAGR {full['cagr']:+.1%}  Sharpe {full['sharpe']:.2f}  "
                   f"MDD {full['mdd']:.1%}  매수/년 {grid[(name, wd)]['buys_per_year']}")
 
     def is_sharpe(name, wd):
@@ -182,14 +182,14 @@ def run():
 
     # 매매 요일은 고정(화요일). 다른 요일 결과는 참고용 비교표로만 표시
     weekday = C.TRADE_WEEKDAY
-    avg_is = {n: float(np.nanmean([is_sharpe(n, wd) for wd in range(5)])) for n in names}
+    avg_is = {n: float(np.nanmean([is_sharpe(n, wd) for wd in range(1)])) for n in names}
     # 전략 선택: 고정 요일 기준 인샘플 샤프 최고 (전량교체 비교용 변형은 제외)
     pool = {n: is_sharpe(n, weekday) for n in names if n != "composite_nobuffer"}
     pool = {n: v for n, v in pool.items() if not np.isnan(v)}
     best = max(pool, key=pool.get) if pool else C.DEFAULT_STRATEGY
     # STRATEGY_MODE="fixed"면 백테스트 결과와 무관하게 DEFAULT_STRATEGY 사용(비교표만 갱신)
     selected = best if C.STRATEGY_MODE == "auto" or C.DEFAULT_STRATEGY not in names else C.DEFAULT_STRATEGY
-    print(f"선택: {selected} / {C.WEEKDAYS_KR[weekday]}요일(고정)")
+    print(f"선택: {selected} (주 2회 월·목 종가 신호, 다음날 시가 매매)")
 
     results = {}
     for n in names:
@@ -201,7 +201,7 @@ def run():
                       **{k: g[k] for k in ("full", "in_sample", "out_sample", "buys_per_year", "final_krw")}}
     weekdays = [{"weekday": wd, "label": C.WEEKDAYS_KR[wd],
                  **{k: grid[(selected, wd)][k] for k in ("full", "in_sample", "out_sample", "buys_per_year")}}
-                for wd in range(5) if (selected, wd) in grid]
+                for wd in range(1) if (selected, wd) in grid]
 
     # 요일별 KOSPI 일간 수익률 (참고)
     kr = kospi.pct_change().dropna()
@@ -247,7 +247,7 @@ def run():
         {"strategy": selected, "label": STRATEGIES[selected][1], "weekday": weekday,
          "calibration": cals.get((selected, weekday)),
          "weekday_label": C.WEEKDAYS_KR[weekday], "selected_at": now,
-         "reason": ("고정 전략" if selected != best else f"{C.IN_SAMPLE_END} 이전 화요일 매매 샤프지수 1위")}, ensure_ascii=False, indent=1))
+         "reason": ("고정 전략" if selected != best else f"{C.IN_SAMPLE_END} 이전 샤프지수 1위")}, ensure_ascii=False, indent=1))
 
 
 if __name__ == "__main__":

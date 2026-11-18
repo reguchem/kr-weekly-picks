@@ -4,6 +4,7 @@ SYNTHETIC=1 python -m tests.simulate_history 20
 import os, sys, json
 import pandas as pd
 from src import weekly, config as C
+from src.strategy import signal_dates
 
 n = int(sys.argv[1]) if len(sys.argv) > 1 else 20
 C.DOCS_DATA.mkdir(parents=True, exist_ok=True)
@@ -11,10 +12,12 @@ recs = {"weeks": []}
 for p in (weekly.PERF_PATH, weekly.REC_PATH, weekly.WARN_PATH):
     p.unlink(missing_ok=True)
 days = pd.bdate_range(end=pd.Timestamp.today(), periods=n * 5 + 5)
-tuesdays = [d for d in days if d.weekday() == C.TRADE_WEEKDAY][-n:]
-for d in tuesdays:
+sigs = signal_dates(days)[-n:]
+for d in sigs:
     os.environ["SYN_END"] = str(d.date())
     M = weekly.build_market(recs, d, refresh_sectors=True)
+    M["slot"] = "tue" if d.weekday() == 0 else "thu"
+    M["trade_date"] = str(pd.bdate_range(d + pd.Timedelta(days=1), periods=1)[0].date())
     rec = weekly.make_recommendation(recs, M)
     if rec:
         recs["weeks"].append(rec)

@@ -12,7 +12,7 @@ def send_telegram(rec: dict):
         return
     buys = [p for p in rec["picks"] if p["action"] == "BUY"]
     holds = [p for p in rec["picks"] if p["action"] == "HOLD"]
-    lines = [f"[주간 추천] {rec['signal_date']} (종목 3 + 테마 ETF 2)"]
+    lines = [f"[추천] {rec['signal_date']} 종가 기준 → {rec.get('trade_date') or '다음 거래일'} 09:00 시가 매매 (종목 3 + 테마 ETF 2)"]
     if rec.get("market_ok") is False:
         lines.append(f"이번 주: 현금 보유 — KOSPI가 {rec.get('market_ma')}일 평균선 아래")
     if rec["sells"]:
@@ -26,7 +26,7 @@ def send_telegram(rec: dict):
     if not rec["sells"] and not buys:
         lines.append("이번 주는 변경 없음 — 기존 종목 유지")
     else:
-        lines.append("참고: 추천가는 오늘 종가 — 같은 가격 매매는 16:00까지 시간외 종가")
+        lines.append("참고: 표시 가격은 기준일 종가, 수량은 그 가격 기준 추정 — 실제 매수는 다음 거래일 시가")
     if PAGE_URL:
         lines.append(PAGE_URL)
     try:
@@ -45,7 +45,7 @@ def send_warnings(date: str, items: list[dict]):
     for i in items:
         lines.append(f"{i['level']}: {i['name']} (매수 후 {i['ret']:+.1%})")
         lines += [f"  - {s}" for s in i["signals"]]
-    lines.append("참고 정보입니다. 매도 여부는 직접 판단하세요. (전략상 정기 교체는 화요일)")
+    lines.append("참고 정보입니다. 매도 여부는 직접 판단하세요. (정기 교체: 화 08:00·목 17:00 추천)")
     if PAGE_URL:
         lines.append(PAGE_URL)
     try:

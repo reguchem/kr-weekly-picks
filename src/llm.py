@@ -50,7 +50,7 @@ def market_brief(date: str, sectors: list[dict], holdings: list[dict]) -> dict |
                       f"외국인 20일 순매수 강도 {s['foreign_flow'] if s['foreign_flow'] is not None else 'n/a'}"
                       for s in sectors)
     hold = ", ".join(f"{h['name']}({h['sector']})" for h in holdings) or "없음"
-    prompt = f"""당신은 한국 주식시장 리서치 애널리스트입니다. 오늘은 {date} 장마감 직후입니다.
+    prompt = f"""당신은 한국 주식시장 리서치 애널리스트입니다. 기준일은 {date}(장마감 기준)입니다.
 웹 검색으로 **최근 1~2주** 정보를 확인해 아래를 분석하세요. 추측은 하지 말고, 확인한 사실만 근거로 쓰세요.
 
 1. 외국인 투자자 매수·매도 경향 (코스피/코스닥 순매수 규모, 집중 매수·매도 업종)

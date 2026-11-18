@@ -15,7 +15,8 @@ from .data import get_universe, get_price_panel, get_ohlcv, get_sectors, get_the
 from .backtest import load_flow, load_fundamentals
 from .etf import (EtfFactors, etf_select, market_ok, ETF_BUY, ETF_SELL, kospi_rets, bear_ok_stocks,
                   bear_ok_etfs)
-from .strategy import Factors, score, select_cost_aware, fit_calibration, simulate, weekly_signal_dates, metrics
+from .strategy import (Factors, score, select_cost_aware, fit_calibration, simulate, weekly_signal_dates,
+                       signal_dates, metrics)
 
 KST = timezone(timedelta(hours=9))
 
@@ -57,7 +58,7 @@ def run():
         if key in scache:
             return scache[key]
         out = []
-        for d in [d for d in weekly_signal_dates(close_s.index, wd) if d >= t0]:
+        for d in [d for d in signal_dates(close_s.index) if d >= t0]:
             if d not in fcache:
                 fcache[d] = F.at(d)
             ctx = {}
@@ -131,9 +132,9 @@ def run():
     results, tue_curves, now_picks = {}, {}, {}
     for key, label, cfg in variants:
         per_wd = []
-        for wd in range(5):
+        for wd in range(1):                 # 주 2회(월·목 종가) 고정 일정
             slots = (cfg["stock"][1] if cfg["stock"] else 0) + cfg["etf"]
-            dates = [d for d in weekly_signal_dates(close_s.index, wd) if d >= t0]
+            dates = [d for d in signal_dates(close_s.index) if d >= t0]
             bear = cfg.get("bear", False)
             ss, b1 = stock_sched(cfg["stock"][0], wd, cfg["ma"], cfg["stock"][1], slots, bear) if cfg["stock"] else ({}, set())
             es, b2 = etf_sched(wd, cfg["ma"], cfg["etf"], dates, bear) if cfg["etf"] else ({}, set())
@@ -152,7 +153,7 @@ def run():
                            "buys_per_year": buys / max(full["years"], 0.1), "final_krw": float(eq.iloc[-1]),
                            "cash_weeks": float(np.mean([len(h) == 0 for _, h in sched])),
                            "stops_per_year": sum(1 for t in trades if t.get("stop")) / max(full["years"], 0.1)})
-            if wd == C.TRADE_WEEKDAY:
+            if wd == 0:
                 tue_curves[key] = eq
                 now_picks[key] = [enames.get(c, c) for c in (sched[-1][1] if sched else [])]
         df = pd.DataFrame(per_wd)
@@ -161,11 +162,11 @@ def run():
         results[key] = {"label": label, "weekdays": per_wd, "avg": a,
                         "cagr_min": float(df["cagr"].min()), "cagr_max": float(df["cagr"].max()),
                         "bench_cagr": float(df["bench_cagr"].mean()), "oos_bench": float(df["oos_bench"].mean()),
-                        "tue_final_krw": float(df.loc[df["weekday"] == "화", "final_krw"].iloc[0])}
+                        "tue_final_krw": float(df["final_krw"].iloc[0])}
         print(f"{key} {label:28s} 평균CAGR {a['cagr']:+.1%} (요일범위 {results[key]['cagr_min']:+.1%}~"
               f"{results[key]['cagr_max']:+.1%}) 샤프 {a['sharpe']:.2f} MDD {a['mdd']:.1%} "
               f"검증CAGR {a['oos_cagr']:+.1%} 검증MDD {a['oos_mdd']:.1%} 매수/년 {a['buys_per_year']:.0f} "
-              f"전액현금주 {a['cash_weeks']:.0%} 손절/년 {a['stops_per_year']:.1f} 화요일 최종 {results[key]['tue_final_krw']:,.0f}원")
+              f"전액현금주 {a['cash_weeks']:.0%} 손절/년 {a['stops_per_year']:.1f} 100만원→ {results[key]['tue_final_krw']:,.0f}원")
     print(f"[참고] KOSPI 평균CAGR {results['H1']['bench_cagr']:+.1%}, 2022년 이후 {results['H1']['oos_bench']:+.1%}")
     print("[최근 화요일 선정]", now_picks)
 
