@@ -711,12 +711,12 @@ function renderMarket(brief, recs, mk){
       <div class="chips" style="margin-top:10px">${kw.top_keywords.map(([w,n],i)=>`<span class="chipo" style="${i===0?'border-color:var(--up);color:var(--up);font-weight:700':''}">${w} <b class="num">${n}</b></span>`).join('')}</div>
       ${kw.top_companies?.length?`<div class="mut" style="font-size:12px;margin-top:14px">많이 언급된 종목</div><div class="chips" style="margin-top:6px">${kw.top_companies.map(([w,n])=>`<span class="chipo">${w} <b class="num">${n}</b></span>`).join('')}</div>`:''}
       <div class="note">기사 제목에서 일반적인 시장 용어(코스피, 외국인, 상승 등)를 빼고 센 빈도입니다.</div></div>
-    <div class="card" style="border-color:var(--up)">
+    <div class="card" style="${kp?'border-color:var(--up)':''}">
       ${kp ? `<div class="badges"><span class="badge BUY">키워드 관련 종목</span><span class="badge">'${kp.keyword}' ${kp.keyword_count}회</span></div>
       <div class="nm">${kp.name}</div><div class="cd">${kp.code}</div><div class="ctx">${kp.sector||''}</div>
       <div class="kv3"><div>기준 종가<b>${num(kp.close)}</b></div><div>1개월<b>${pct(kp.ret_21)}</b></div><div>52주 고가 대비<b>${Math.round(kp.near_high*100)}%</b></div></div>
       <ul class="sig" style="margin-top:10px">
-        <li>'${kp.keyword}' 기사 중 ${kp.mentions}건에서 언급</li><li>20일선 위 · 1개월 상승(과열 40% 미만)${kp.flow_f!=null?` · 외국인 20일 ${pctP(kp.flow_f)}`:''}</li></ul>
+        <li>${kp.linked?`'${kp.keyword}' 관련 국내주(연결) · 관련 기사 ${kp.mentions}건`:`'${kp.keyword}' 관련 기사 ${kp.mentions}건에서 언급`}</li><li>20일선 위 · 1개월 상승(과열 40% 미만)${kp.flow_f!=null?` · 외국인 20일 ${pctP(kp.flow_f)}`:''}</li></ul>
       ${kp.articles?.length?`<div style="margin-top:8px">${kp.articles.map(a=>`<a href="${a.link}" target="_blank" rel="noopener" style="display:block;font-size:12px;color:var(--text2);padding:3px 0">${md(a.date)} · ${a.title}</a>`).join('')}</div>`:''}
       <form class="trade" data-code="${kp.code}" data-name="${kp.name}" data-type="stock" onsubmit="return onBuy(event)">
         <label>수량(주)<input name="qty" type="number" inputmode="numeric" min="1" step="1" value="${Math.max(1, Math.floor(200000/kp.close))}" required></label>
@@ -724,7 +724,9 @@ function renderMarket(brief, recs, mk){
         <div class="tot">총 매수가<b class="oa">–</b></div>
         <div class="amt-line"><span class="mut">참고용 · 백테스트 미검증</span><span class="left"></span></div>
         <button class="btn btn-buy">매수</button><div class="msg"></div>
-      </form>` : `<b style="font-size:14px">키워드 관련 종목</b><div class="mut" style="font-size:13px;margin-top:8px">상위 키워드 관련 기사에 언급된 종목 중 추세 조건(20일선 위, 1개월 상승)을 만족하는 종목이 없습니다.</div>`}
+      </form>` : `<div class="badges"><span class="badge">키워드 관련 종목</span></div><div class="nm">이번 주는 해당 없음</div>
+      <div class="mut" style="font-size:13px;margin-top:8px;line-height:1.6">조건: 상위 키워드 관련 기사 <b>${kw.min_articles||5}건 이상</b>에 언급(해외 기업 키워드는 연결된 국내 관련주 포함) + 20일선 위 · 1개월 상승(40% 미만).</div>
+      ${(kw.tried||[]).length?`<ul class="sig" style="margin-top:8px">${kw.tried.map(t=>`<li>'${t.keyword}'(${t.count}회): ${t.candidates.length?t.candidates.join(', '):'언급된 국내 종목 없음'}${t.notes?.length?` — ${t.notes.join(', ')}`:''}</li>`).join('')}</ul>`:''}`}
     </div></div>` : '';
   el.innerHTML = ai + `<div class="panel" style="margin-bottom:12px;font-size:15px;line-height:1.7"><b>요약</b> · ${mk.summary||'–'}</div>
     ${kwPanel}

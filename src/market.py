@@ -248,51 +248,66 @@ def weekly_keywords(asof: pd.Timestamp, M: dict | None):
         return None
     names = dict(M["names"]) if M else {}
     name2code = {v: k for k, v in names.items() if len(v) >= 2}
+    alias = {a: n for a, n in C.NAME_ALIASES.items() if n in name2code}
+    links = {k: [n for n in v if n in name2code] for k, v in C.THEME_LINKS.items()}
     kw_cnt, co_cnt = {}, {}
     for a in uniq:
         toks = set(_tokens(a["title"]))
         words = set(re.findall(r"[가-힣A-Za-z0-9&]+", a["title"]))
         cos = {n for n in name2code if (n in words if (n in AMBIG or len(n) <= 2) else n in a["title"])}
+        cos |= {n for al, n in alias.items() if al in words}
         a["companies"] = sorted(cos)
         for n in cos:
             co_cnt[n] = co_cnt.get(n, 0) + 1
         for w in toks:
-            if w in name2code:                                 # 회사명은 키워드 대신 '많이 언급된 종목'으로
+            if w in name2code or w in alias:                    # 회사명은 키워드 대신 '많이 언급된 종목'으로
                 continue
             kw_cnt[w] = kw_cnt.get(w, 0) + 1
     top_kw = sorted(kw_cnt.items(), key=lambda x: -x[1])[:12]
     top_co = sorted(co_cnt.items(), key=lambda x: -x[1])[:8]
 
-    pick = None
+    pick, tried = None, []
     if M is not None and top_kw:
         f = M["f"]
-        for kw, n in top_kw[:3]:                               # 상위 키워드부터 관련 종목 탐색
+        for kw, n in top_kw[:5]:                               # 상위 키워드부터 관련 종목 탐색
             rel = [a for a in uniq if kw in a["title"]]
             cand = {}
-            for a in rel:
+            for a in rel:                                      # 키워드 기사에 직접 언급된 국내 종목
                 for c in a["companies"]:
                     cand[c] = cand.get(c, 0) + 1
-            rows = []
+            linked = links.get(kw, [])
+            for c in linked:                                   # 해외 기업 키워드 → 연결된 국내 관련주
+                cand[c] = cand.get(c, 0) + len(rel)
+            rows, reasons = [], []
             for nm, k in cand.items():
                 code = name2code[nm]
+                if k < C.KW_MIN_ARTICLES:
+                    continue
                 if code not in f.index or code in C.EXCLUDE:
+                    reasons.append(f"{nm}: 데이터 없음")
                     continue
                 r = f.loc[code]
                 ok = (r["close"] > r["ma20"]) and (r["ret_21"] > 0) and (r["ret_21"] <= 0.40)
-                rows.append((ok, k, float(r["close"] / r["high_252"]), float(r["ret_21"]), code, nm, r))
-            rows = [x for x in rows if x[0]]
+                if not ok:
+                    reasons.append(f"{nm}: 추세 조건 미달")
+                    continue
+                rows.append((k, float(r["close"] / r["high_252"]), float(r["ret_21"]), code, nm, r))
+            tried.append({"keyword": kw, "count": n,
+                          "candidates": [f"{nm}({k}건)" for nm, k in sorted(cand.items(), key=lambda x: -x[1])[:4]],
+                          "linked": linked, "notes": reasons[:4]})
             if not rows:
                 continue
-            rows.sort(key=lambda x: (-x[1], -x[2]))               # 관련 기사 언급 많은 순 → 52주 고가 근접
-            ok, k, nh, r21, code, nm, r = rows[0]
+            rows.sort(key=lambda x: (-x[0], -x[1]))               # 관련 기사 많은 순 → 52주 고가 근접
+            k, nh, r21, code, nm, r = rows[0]
             pick = {"keyword": kw, "keyword_count": n, "code": code, "name": nm, "mentions": k,
-                    "sector": M["sectors"].get(code), "close": float(r["close"]), "ret_21": r21,
-                    "near_high": nh, "above_ma20": True,
+                    "linked": nm in linked, "sector": M["sectors"].get(code), "close": float(r["close"]),
+                    "ret_21": r21, "near_high": nh, "above_ma20": True,
                     "flow_f": None if pd.isna(r.get("flow_f")) else float(r["flow_f"]),
                     "articles": [{"title": a["title"], "link": a["link"], "date": a["date"], "source": a["source"]}
-                                 for a in rel if nm in a["title"]][:3]}
+                                 for a in rel][:4]}
             break
-    return {"days": KW_DAYS, "articles": len(uniq), "top_keywords": top_kw, "top_companies": top_co, "pick": pick}
+    return {"days": KW_DAYS, "articles": len(uniq), "top_keywords": top_kw, "top_companies": top_co, "pick": pick,
+            "min_articles": C.KW_MIN_ARTICLES, "tried": tried}
 
 
 def _won_eok(x):
