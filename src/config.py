@@ -7,8 +7,8 @@ CACHE = ROOT / "data" / "cache"         # 백테스트용 캐시 (선택)
 
 # ── 유니버스 ─────────────────────────────────────────────
 import os as _os
-UNIVERSE_MARKETS = tuple(_os.environ.get("UNIVERSE_MARKETS", "KOSPI").split(","))   # 후보 시장
-UNIVERSE_SIZE = int(_os.environ.get("UNIVERSE_SIZE", "500"))                       # 시가총액 상위 N 종목
+UNIVERSE_MARKETS = tuple((_os.environ.get("UNIVERSE_MARKETS") or "KOSPI,KOSDAQ").split(","))   # 후보 시장
+UNIVERSE_SIZE = int(_os.environ.get("UNIVERSE_SIZE") or "300")                                  # 시가총액 상위 N 종목
 MIN_TRADING_VALUE = 1e9      # 20일 평균 거래대금 하한 (원) — 10억
 MIN_HISTORY_DAYS = 260       # 최소 상장 기간(거래일)
 

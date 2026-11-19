@@ -2,6 +2,15 @@ name: experiments
 
 on:
   workflow_dispatch:
+    inputs:
+      markets:
+        description: "후보 시장 (예: KOSPI 또는 KOSPI,KOSDAQ). 비우면 기본값"
+        type: string
+        default: ""
+      size:
+        description: "시가총액 상위 N. 비우면 기본값"
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -25,6 +34,8 @@ jobs:
         timeout-minutes: 150
         env:
           TZ: Asia/Seoul
+          UNIVERSE_MARKETS: ${{ inputs.markets }}
+          UNIVERSE_SIZE: ${{ inputs.size }}
           KRX_ID: ${{ secrets.KRX_ID }}
           KRX_PW: ${{ secrets.KRX_PW }}
         run: python -m src.experiments | tee experiments.log
