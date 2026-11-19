@@ -284,27 +284,30 @@ footer ul{margin:0 0 16px;padding-left:18px}
     <svg class="bust" viewBox="0 0 240 250" role="img" aria-label="주인장 캐릭터">
       <defs>
         <linearGradient id="hbneck" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#b98365"/><stop offset=".45" stop-color="#d9a585"/><stop offset="1" stop-color="#e3b393"/></linearGradient>
-        <linearGradient id="hbsuit" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#26365a"/><stop offset="1" stop-color="#141f38"/></linearGradient>
-        <linearGradient id="hbtie" x1="0" x2="1"><stop offset="0" stop-color="#a50d26"/><stop offset=".5" stop-color="#d4183a"/><stop offset="1" stop-color="#a50d26"/></linearGradient>
+        <linearGradient id="hbshirt" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dfe4ee"/></linearGradient>
+        <linearGradient id="hbvest" x1="0" x2="1"><stop offset="0" stop-color="#5e1426"/><stop offset=".5" stop-color="#7d1d33"/><stop offset="1" stop-color="#5e1426"/></linearGradient>
       </defs>
       <!-- neck (behind chin) -->
       <path d="M97,140 C99,158 98,172 95,186 L161,186 C158,172 157,158 159,140 Z" fill="url(#hbneck)"/>
       <path d="M97,162 C114,174 142,174 159,162 L159,146 C142,160 114,160 97,146 Z" fill="#8a5a42" opacity=".35"/>
-      <!-- suit body -->
-      <path d="M8,250 C10,214 34,190 72,180 L100,174 L128,212 L156,174 L184,180 C222,190 232,214 232,250 Z" fill="url(#hbsuit)"/>
-      <!-- shirt -->
-      <path d="M100,174 L128,236 L156,174 L150,170 L128,200 L106,170 Z" fill="#eef2f8"/>
-      <!-- tie -->
-      <path d="M121,196 L135,196 L139,210 L134,246 L128,250 L122,246 L117,210 Z" fill="url(#hbtie)"/>
-      <path d="M120,186 L136,186 L134,198 L122,198 Z" fill="#8f0b20"/>
-      <!-- collar -->
-      <path d="M101,166 L120,186 L111,200 L94,178 Z" fill="#ffffff"/>
-      <path d="M155,166 L136,186 L145,200 L162,178 Z" fill="#ffffff"/>
-      <!-- lapels -->
-      <path d="M94,178 L72,180 L112,246 L126,232 L106,196 Z" fill="#33466e"/>
-      <path d="M162,178 L184,180 L144,246 L130,232 L150,196 Z" fill="#33466e"/>
-      <path d="M8,250 C10,214 34,190 72,180" fill="none" stroke="#3b5080" stroke-width="2" opacity=".6"/>
-      <path d="M232,250 C230,214 206,190 184,180" fill="none" stroke="#3b5080" stroke-width="2" opacity=".6"/>
+      <!-- shirt body / sleeves -->
+      <path d="M8,250 C10,214 34,192 72,182 L98,176 L158,176 L184,182 C222,192 232,214 232,250 Z" fill="url(#hbshirt)"/>
+      <path d="M36,250 C38,232 44,216 52,206" fill="none" stroke="#c3cad8" stroke-width="2" opacity=".8"/>
+      <path d="M204,250 C202,232 196,216 188,206" fill="none" stroke="#c3cad8" stroke-width="2" opacity=".8"/>
+      <!-- open neck V -->
+      <path d="M98,172 L128,206 L158,172 Z" fill="#e0ad8c"/>
+      <path d="M98,172 L128,190 L158,172 Z" fill="#c18c6c" opacity=".35"/>
+      <!-- burgundy vest -->
+      <path d="M58,188 C76,182 92,180 104,180 L128,222 L152,180 C164,180 180,182 198,188 C203,212 206,232 208,250 L48,250 C50,232 53,212 58,188 Z" fill="url(#hbvest)"/>
+      <path d="M104,180 L128,222 L152,180" fill="none" stroke="#4a0f1d" stroke-width="2.5"/>
+      <path d="M58,188 C53,212 50,232 48,250 M198,188 C203,212 206,232 208,250" fill="none" stroke="#4a0f1d" stroke-width="2" opacity=".7"/>
+      <line x1="128" y1="222" x2="128" y2="250" stroke="#4a0f1d" stroke-width="1.6"/>
+      <circle cx="132" cy="232" r="2.6" fill="#d9b25c"/><circle cx="132" cy="245" r="2.6" fill="#d9b25c"/>
+      <path d="M74,226 L96,224" stroke="#4a0f1d" stroke-width="2" stroke-linecap="round"/>
+      <path d="M160,224 L182,226" stroke="#4a0f1d" stroke-width="2" stroke-linecap="round"/>
+      <!-- shirt collar -->
+      <path d="M100,164 L126,198 L114,206 L92,182 Z" fill="#ffffff" stroke="#d3d9e4" stroke-width="1"/>
+      <path d="M156,164 L130,198 L142,206 L164,182 Z" fill="#ffffff" stroke="#d3d9e4" stroke-width="1"/>
       <image href="assets/owner.webp" x="54" y="10" width="132" height="162.2"/>
     </svg>
   </div>
