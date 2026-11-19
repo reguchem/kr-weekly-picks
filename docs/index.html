@@ -656,7 +656,7 @@ function renderMarket(brief, recs){
       ${b.foreign?`<p><b>외국인</b> ${b.foreign}</p>`:''}${b.domestic?`<p><b>국내</b> ${b.domestic}</p>`:''}${b.global?`<p><b>세계</b> ${b.global}</p>`:''}
       ${b.risks?.length?`<p style="margin-top:14px"><b>주요 위험</b></p><ul class="sig" style="margin-bottom:12px">${b.risks.map(r=>`<li>${r}</li>`).join('')}</ul>`:''}
       ${Object.keys(b.sector_outlook||{}).length?`<div class="chips">${Object.entries(b.sector_outlook).map(([k,v])=>`<span class="chipo" title="${(b.sector_reason||{})[k]||''}">${k} ${v>0?'▲':v<0?'▼':'–'}</span>`).join('')}</div>`:''}
-    </div>` : `<div class="mut" style="font-size:14px">뉴스 브리핑 없음 — 저장소 Secrets에 ANTHROPIC_API_KEY를 넣으면 매주 화요일 자동 작성됩니다.</div>`;
+    </div>` : `<div class="mut" style="font-size:14px">뉴스 브리핑 없음 — 저장소 Secrets에 ANTHROPIC_API_KEY를 넣으면 화·목 추천 때마다 자동 작성됩니다.</div>`;
   const top = secs.slice(0,6);
   const right = top.length ? `<table>
       <thead><tr><th class="l">업종 강도</th><th>1개월</th><th>외국인</th></tr></thead>
