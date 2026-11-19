@@ -508,6 +508,11 @@ def run():
     else:
         last_day = get_ohlcv("KOSPI", 10).index[-1]  # 화요일 오전: 최신 종가 = 월요일(또는 직전 거래일)
     key = _slot_key(last_day, slot) if slot else None
+    if slot and key in done and os.environ.get("FORCE") == "1":
+        # 같은 회차 다시 계산(데이터 문제로 재실행할 때): 기존 회차 기록을 지우고 새로 만든다
+        recs["weeks"] = [w for w in recs["weeks"] if w["week"] != key]
+        done.discard(key)
+        print(f"[재계산] {key} 회차를 다시 만듭니다")
     want = bool(slot) and key not in done
     if not slot and last_day.normalize() != today:
         print(f"오늘은 휴장 — 성과만 갱신 (마지막 거래일 {last_day.date()})")

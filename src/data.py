@@ -38,6 +38,21 @@ def _get(url, params=None, retries=3, timeout=15):
             time.sleep(1.5 * (i + 1))
 
 
+def _html(r) -> str:
+    """네이버 금융 페이지 디코딩: 페이지마다 UTF-8/EUC-KR이 섞여 있어 선언된 charset 우선, 없으면 UTF-8 → EUC-KR"""
+    b = r.content
+    m = re.search(rb'charset=["\']?([A-Za-z0-9_-]+)', b[:3000])
+    enc = (m.group(1).decode().lower() if m else None) or None
+    for e in [enc, "utf-8", "euc-kr"]:
+        if not e:
+            continue
+        try:
+            return b.decode("cp949" if e in ("euc-kr", "ks_c_5601-1987") else e)
+        except (UnicodeDecodeError, LookupError):
+            continue
+    return b.decode("euc-kr", errors="ignore")
+
+
 def _num(x):
     if x is None:
         return np.nan
@@ -321,6 +336,11 @@ def get_sectors() -> dict:
 _FLOW_ERR = None
 
 
+def _set_flow_err(msg):
+    global _FLOW_ERR
+    _FLOW_ERR = msg
+
+
 def check_krx_login():
     """KRX 로그인 상태 점검 (로그용). KRX_ID / KRX_PW 환경변수 필요."""
     if SYNTHETIC:
@@ -376,8 +396,8 @@ def get_flow_recent_naver(code: str, pages: int = 2) -> pd.DataFrame | None:
     rows = []
     try:
         for p in range(1, pages + 1):
-            html = _get("https://finance.naver.com/item/frgn.naver",
-                        params={"code": code, "page": p}, retries=2, timeout=8).content.decode("euc-kr", errors="ignore")
+            html = _html(_get("https://finance.naver.com/item/frgn.naver",
+                        params={"code": code, "page": p}, retries=2, timeout=8))
             for t in pd.read_html(pd.io.common.StringIO(html)):
                 cols = [" ".join(map(str, c)) if isinstance(c, tuple) else str(c) for c in t.columns]
                 if any("외국인" in c for c in cols) and any("기관" in c for c in cols):
@@ -396,9 +416,11 @@ def get_flow_recent_naver(code: str, pages: int = 2) -> pd.DataFrame | None:
                         rows.append({"date": d, "foreign": _num(r[fcol]) * px, "inst": _num(r[icol]) * px})
                     break
         if not rows:
+            _set_flow_err(f"naver frgn {code}: 표 없음 (len={len(html)}, 외국인 포함={'외국인' in html}, head={html[:120]!r})")
             return None
         return pd.DataFrame(rows).drop_duplicates("date").set_index("date").sort_index()
-    except Exception:
+    except Exception as e:
+        _set_flow_err(f"naver frgn {code}: {e!r}")
         return None
 
 

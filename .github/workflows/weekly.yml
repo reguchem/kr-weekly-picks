@@ -10,6 +10,10 @@ on:
         description: "수동 추천: tue(월 종가 기준) / thu(목 종가 기준) / 비우면 점검·성과만"
         type: string
         default: ""
+      force:
+        description: "같은 회차 추천을 다시 계산 (1이면 기존 회차 덮어쓰기)"
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -32,6 +36,7 @@ jobs:
       - name: 추천 · 점검 · 성과 갱신
         env:
           SLOT: ${{ inputs.slot }}
+          FORCE: ${{ inputs.force }}
           TZ: Asia/Seoul
           KRX_ID: ${{ secrets.KRX_ID }}
           KRX_PW: ${{ secrets.KRX_PW }}
