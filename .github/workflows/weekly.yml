@@ -40,8 +40,14 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           PAGE_URL: ${{ vars.PAGE_URL }}
-        timeout-minutes: 35
-        run: python -m src.weekly
+          FLOW_SOURCE: naver          # 수급은 네이버만 사용 (KRX 종목별 순차 조회는 15~25분 걸려 제외)
+          PYTHONUNBUFFERED: "1"
+        timeout-minutes: 25
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p docs/data
+          python -m src.weekly 2>&1 | while IFS= read -r l; do printf '[%s] %s\n' "$(date +%H:%M:%S)" "$l"; done | tee docs/data/run_log.txt
       - name: 결과 커밋
         if: always()
         run: |

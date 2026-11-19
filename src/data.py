@@ -377,7 +377,7 @@ def get_flow_recent_naver(code: str, pages: int = 2) -> pd.DataFrame | None:
     try:
         for p in range(1, pages + 1):
             html = _get("https://finance.naver.com/item/frgn.naver",
-                        params={"code": code, "page": p}).content.decode("euc-kr", errors="ignore")
+                        params={"code": code, "page": p}, retries=2, timeout=8).content.decode("euc-kr", errors="ignore")
             for t in pd.read_html(pd.io.common.StringIO(html)):
                 cols = [" ".join(map(str, c)) if isinstance(c, tuple) else str(c) for c in t.columns]
                 if any("외국인" in c for c in cols) and any("기관" in c for c in cols):
@@ -412,13 +412,13 @@ def get_flow_panel(codes, start: str, end: str, recent_only=False, workers=None)
     fails = {"n": 0, "ok": 0}
 
     def job(c):
-        if not recent_only and fails["ok"] == 0 and fails["n"] >= 5:
-            return c, None                      # 처음 5종목이 모두 실패하면 KRX 조회 중단(로그인 문제 등)
-        df = None if recent_only else get_flow_history(c, start, end)
-        if not recent_only:
-            fails["n" if df is None else "ok"] += 1
-        if df is None and recent_only:
+        if fails["ok"] == 0 and fails["n"] >= (20 if recent_only else 5):
+            return c, None                      # 처음 몇 종목이 모두 실패하면 조회 중단(차단·로그인 문제 등)
+        if recent_only:
             df = get_flow_history(c, start, end) if SYNTHETIC else get_flow_recent_naver(c)
+        else:
+            df = get_flow_history(c, start, end)
+        fails["n" if df is None else "ok"] += 1
         return c, df
 
     # KRX(pykrx)는 동시 요청에 빈 응답을 주므로 순차 조회, 네이버는 병렬
