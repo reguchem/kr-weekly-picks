@@ -42,7 +42,7 @@
       "1w": null,
       "1m": null,
       "3m": null,
-      "now": 0.0035
+      "now": 0.0127
      }
     },
     {
@@ -246,15 +246,258 @@
     "1w": null,
     "1m": null,
     "3m": null,
-    "now": 0.0112
+    "now": 0.0158
    },
    "kospi": {
     "1w": null,
     "1m": null,
     "3m": null,
-    "now": -0.0166
+    "now": 0.0094
    }
+  },
+  {
+   "week": "2026-W47-thu",
+   "slot": "thu",
+   "signal_date": "2026-11-19",
+   "trade_date": "2026-11-20",
+   "strategy": "theme_flow_slow",
+   "strategy_label": "테마·수급 느린교체(60일선) + 테마 ETF 2개",
+   "mode": "bear",
+   "stopped": [],
+   "kospi_r63": -0.2521,
+   "market_ok": false,
+   "kospi_level": 5137.89,
+   "kospi_ma": 6845.54,
+   "market_ma": 120,
+   "picks": [
+    {
+     "type": "stock",
+     "code": "041510",
+     "name": "에스엠",
+     "rank": 1,
+     "score": 0.749,
+     "action": "BUY",
+     "exp_week": null,
+     "shares": 2,
+     "amount": 190200.0,
+     "sector": "오디오물 출판 및 원판 녹음업",
+     "sector_rank": 1,
+     "close": 95100.0,
+     "ret_21": 0.1045,
+     "ret_63": 0.3394,
+     "mom_12_1": -0.1608,
+     "near_high": 0.7044,
+     "tv_ratio": 1.55,
+     "flow_f": null,
+     "flow_i": null,
+     "per": 6.27,
+     "pbr": 2.17,
+     "entry": null,
+     "ret": null
+    },
+    {
+     "type": "stock",
+     "code": "035900",
+     "name": "JYP Ent.",
+     "rank": 2,
+     "score": 0.725,
+     "action": "BUY",
+     "exp_week": null,
+     "shares": 4,
+     "amount": 191800.0,
+     "sector": "오디오물 출판 및 원판 녹음업",
+     "sector_rank": 1,
+     "close": 47950.0,
+     "ret_21": 0.2124,
+     "ret_63": 0.2186,
+     "mom_12_1": -0.4507,
+     "near_high": 0.6187,
+     "tv_ratio": 2.59,
+     "flow_f": null,
+     "flow_i": null,
+     "per": 9.89,
+     "pbr": 2.56,
+     "entry": null,
+     "ret": null
+    }
+   ],
+   "sells": [
+    {
+     "code": "020560",
+     "name": "아시아나항공",
+     "type": "stock",
+     "rank": null,
+     "sector": "항공 여객 운송업"
+    }
+   ],
+   "top10": [
+    {
+     "code": "041510",
+     "name": "에스엠",
+     "score": 0.749,
+     "sector": "오디오물 출판 및 원판 녹음업"
+    },
+    {
+     "code": "035900",
+     "name": "JYP Ent.",
+     "score": 0.725,
+     "sector": "오디오물 출판 및 원판 녹음업"
+    },
+    {
+     "code": "086450",
+     "name": "동국제약",
+     "score": 0.72,
+     "sector": "의약품 제조업"
+    },
+    {
+     "code": "280360",
+     "name": "롯데웰푸드",
+     "score": 0.6,
+     "sector": "기타 식품 제조업"
+    },
+    {
+     "code": "028050",
+     "name": "삼성E&A",
+     "score": 0.594,
+     "sector": "건축기술, 엔지니어링 및 관련 기술 서비스업"
+    },
+    {
+     "code": "053800",
+     "name": "안랩",
+     "score": 0.588,
+     "sector": "소프트웨어 개발 및 공급업"
+    },
+    {
+     "code": "352820",
+     "name": "하이브",
+     "score": 0.576,
+     "sector": "오디오물 출판 및 원판 녹음업"
+    },
+    {
+     "code": "009420",
+     "name": "한올바이오파마",
+     "score": 0.555,
+     "sector": "의약품 제조업"
+    },
+    {
+     "code": "006280",
+     "name": "녹십자",
+     "score": 0.539,
+     "sector": "의약품 제조업"
+    },
+    {
+     "code": "271560",
+     "name": "오리온",
+     "score": 0.529,
+     "sector": "기타 식품 제조업"
+    }
+   ],
+   "sectors": [
+    {
+     "sector": "오디오물 출판 및 원판 녹음업",
+     "rank": 1,
+     "ret_21": 0.1045296167247387,
+     "foreign_flow": null,
+     "tilt": 0,
+     "n": 3
+    },
+    {
+     "sector": "의약품 제조업",
+     "rank": 2,
+     "ret_21": -0.025401332196180404,
+     "foreign_flow": null,
+     "tilt": 0,
+     "n": 12
+    },
+    {
+     "sector": "기타 식품 제조업",
+     "rank": 3,
+     "ret_21": 0.016597615152896594,
+     "foreign_flow": null,
+     "tilt": 0,
+     "n": 6
+    },
+    {
+     "sector": "건축기술, 엔지니어링 및 관련 기술 서비스업",
+     "rank": 4,
+     "ret_21": -0.004318984786213842,
+     "foreign_flow": null,
+     "tilt": 0,
+     "n": 4
+    },
+    {
+     "sector": "소프트웨어 개발 및 공급업",
+     "rank": 5,
+     "ret_21": 0.014933058702368607,
+     "foreign_flow": null,
+     "tilt": 0,
+     "n": 11
+    },
+    {
+     "sector": "기초 의약물질 제조업",
+     "rank": 6,
+     "ret_21": -0.052631578947368474,
+     "foreign_flow": null,
+     "tilt": 0,
+     "n": 9
+    },
+    {
+     "sector": "전기 통신업",
+     "rank": 7,
+     "ret_21": 0.022911051212938016,
+     "foreign_flow": null,
+     "tilt": 0,
+     "n": 3
+    },
+    {
+     "sector": "기타 금융업",
+     "rank": 8,
+     "ret_21": -0.045964840773361215,
+     "foreign_flow": null,
+     "tilt": 0,
+     "n": 30
+    },
+    {
+     "sector": "화학섬유 제조업",
+     "rank": 9,
+     "ret_21": 0.003816793893129722,
+     "foreign_flow": null,
+     "tilt": 0,
+     "n": 3
+    },
+    {
+     "sector": "종합 소매업",
+     "rank": 10,
+     "ret_21": 0.03583555663351923,
+     "foreign_flow": null,
+     "tilt": 0,
+     "n": 6
+    },
+    {
+     "sector": "절연선 및 케이블 제조업",
+     "rank": 11,
+     "ret_21": -0.09706518124376456,
+     "foreign_flow": null,
+     "tilt": 0,
+     "n": 4
+    },
+    {
+     "sector": "보험업",
+     "rank": 12,
+     "ret_21": -0.09311087190527445,
+     "foreign_flow": null,
+     "tilt": 0,
+     "n": 7
+    }
+   ],
+   "llm_used": false,
+   "equity": 1000536.0,
+   "round_trip": 0.0043,
+   "created_at": "2026-11-19 17:00",
+   "entry_date": null,
+   "avg": null,
+   "kospi": null
   }
  ],
- "updated_at": "2026-11-19 11:59"
+ "updated_at": "2026-11-19 16:59"
 }
