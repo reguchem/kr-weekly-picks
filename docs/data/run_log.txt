@@ -1,33 +1,28 @@
-[17:17:59] [재계산] 2026-W47-thu 회차를 다시 만듭니다
-[17:18:00] [sector] _sectors_fdr: 2769 종목, 158 업종
-[17:18:05] [universe] _universe_naver_api: KOSPI+KOSDAQ 상위 300 / 수집 947 종목
-[17:18:15] [prices] 300/300 종목, 300 거래일
-[17:18:16] [etf] 업종·테마 ETF 80개
-[17:18:19] [prices] 80/80 종목, 300 거래일
-[17:18:19] /home/runner/work/kr-weekly-picks/kr-weekly-picks/src/weekly.py:124: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
-[17:18:19]   start = str((last_day - pd.Timedelta(days=60)).date())
-[17:18:22] [flow] 50/300 처리, 성공 0
-[17:18:22] [flow] 100/300 처리, 성공 0
-[17:18:22] [flow] 150/300 처리, 성공 0
-[17:18:22] [flow] 200/300 처리, 성공 0
-[17:18:22] [flow] 250/300 처리, 성공 0
-[17:18:22] [flow] 300/300 처리, 성공 0
-[17:18:22] [flow] 수급 데이터 없음 (마지막 오류: naver frgn 011200: ValueError('No tables found'))
-[17:18:22] [내 보유] 1종목, 평가 999,986원 (-0.00%), 실현 0원
-[17:18:22] /home/runner/work/kr-weekly-picks/kr-weekly-picks/src/weekly.py:535: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
-[17:18:22]   nxt = pd.bdate_range(last_day + pd.Timedelta(days=1), periods=1)[0]
-[17:18:24] KRX 로그인 시도...
-[17:18:24]   로그인 ID: minchaa
-[17:18:25] KRX 로그인 완료.
-[17:18:25]   로그인 시간: 2026-11-19 17:18:25
-[17:18:25]   만료 시간: 2026-11-19 18:18:25
-[17:18:29] [llm] ANTHROPIC_API_KEY 없음 → 건너뜀
-[17:18:29] [추천] 2026-11-19 시장필터 현금: 에스엠(BUY), 동국제약(BUY) / 매도: 아시아나항공
-[17:18:29] [llm] ANTHROPIC_API_KEY 없음 → 건너뜀
-[17:18:29] [점검] 아시아나항공: 정상 []
-[17:18:33] [market] 뉴스 한국경제 실패: HTTPError('403 Client Error: Forbidden for url: https://www.hankyung.com/feed/finance')
-[17:18:33] [market] 뉴스 한국경제 실패: HTTPError('403 Client Error: Forbidden for url: https://www.hankyung.com/feed/economy')
-[17:18:40] [market] 키워드 상위: [('앤트로픽', 23), ('AI', 20), ('수출', 16), ('조달러', 9), ('반도체', 8)] · 종목 언급: [('삼성전자', 3), ('카카오뱅크', 3), ('SK텔레콤', 3), ('하이브', 3), ('카카오', 2)] · 추천: ('앤트로픽', 'SK텔레콤')
-[17:18:40] [market] 지표 9개, 수급 있음, 뉴스 10건 · 외국인 2주 순매수 -5.6조(5일 연속 순매도) · 기관 +2.2조 · KOSPI 2주 -4.6% · 원/달러 1,330원(-0.7%) · 美 반도체지수 +7.1% · 美 10년물 5.07%(+0.23%p) · VIX 24.6
-[17:18:41] [prices] 4/4 종목, 91 거래일
-[17:18:41] [성과] 누적 0.004, KOSPI 0.0, 기준일 2026-11-19
+[17:21:14] [universe] _universe_naver_api: KOSPI+KOSDAQ 상위 300 / 수집 948 종목
+[17:21:23] [prices] 300/300 종목, 300 거래일
+[17:21:24] [etf] 업종·테마 ETF 80개
+[17:21:26] [prices] 80/80 종목, 300 거래일
+[17:21:26] /home/runner/work/kr-weekly-picks/kr-weekly-picks/src/weekly.py:124: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+[17:21:26]   start = str((last_day - pd.Timedelta(days=60)).date())
+[17:21:29] [flow] 50/300 처리, 성공 0
+[17:21:29] [flow] 100/300 처리, 성공 0
+[17:21:29] [flow] 150/300 처리, 성공 0
+[17:21:29] [flow] 200/300 처리, 성공 0
+[17:21:29] [flow] 250/300 처리, 성공 0
+[17:21:29] [flow] 300/300 처리, 성공 0
+[17:21:29] [flow] 수급 데이터 없음 (마지막 오류: naver frgn 011200: 표 없음 len=85766 외국인@-1 title='HMM - Npay 증권' snip='<!DOCTYPE html><html lang="ko" class="" data-theme="light"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="viewport" content="width=1366, initial-scale=1.0, user-scalable=yes"/><link rel="stylesheet" href="https://financial-vn.pstatic.net/stock-pc/261118-482102c/_next/static/chunks/0sk63q9ocb8wn.css" data-precedence="next"/><link rel="')
+[17:21:29] [내 보유] 1종목, 평가 999,876원 (-0.01%), 실현 0원
+[17:21:29] 신규 추천 없음 (슬롯 thu, 이미 추천함: True)
+[17:21:29] [llm] ANTHROPIC_API_KEY 없음 → 건너뜀
+[17:21:29] [점검] 아시아나항공: 정상 []
+[17:21:30] KRX 로그인 시도...
+[17:21:30]   로그인 ID: minchaa
+[17:21:32] KRX 로그인 완료.
+[17:21:32]   로그인 시간: 2026-11-19 17:21:32
+[17:21:32]   만료 시간: 2026-11-19 18:21:32
+[17:21:35] [market] 뉴스 한국경제 실패: HTTPError('403 Client Error: Forbidden for url: https://www.hankyung.com/feed/finance')
+[17:21:35] [market] 뉴스 한국경제 실패: HTTPError('403 Client Error: Forbidden for url: https://www.hankyung.com/feed/economy')
+[17:21:41] [market] 키워드 상위: [('앤트로픽', 23), ('AI', 20), ('수출', 16), ('조달러', 9), ('반도체', 8)] · 종목 언급: [('삼성전자', 3), ('카카오뱅크', 3), ('SK텔레콤', 3), ('하이브', 3), ('카카오', 2)] · 추천: ('앤트로픽', 'SK텔레콤')
+[17:21:41] [market] 지표 9개, 수급 있음, 뉴스 10건 · 외국인 2주 순매수 -5.6조(5일 연속 순매도) · 기관 +2.2조 · KOSPI 2주 -4.6% · 원/달러 1,330원(-0.7%) · 美 반도체지수 +7.1% · 美 10년물 5.07%(+0.23%p) · VIX 24.6
+[17:21:41] [prices] 4/4 종목, 91 거래일
+[17:21:41] [성과] 누적 0.0037, KOSPI 0.0, 기준일 2026-11-19
