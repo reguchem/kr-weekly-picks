@@ -1,0 +1,39 @@
+{
+ "date": "2026-11-18",
+ "items": [
+  {
+   "code": "020560",
+   "name": "아시아나항공",
+   "type": "stock",
+   "sector": "운송·창고",
+   "buy_date": "2026-11-18",
+   "buy": 8430.0,
+   "last": 8430.0,
+   "ret": 0.0,
+   "dd": 0.0,
+   "signals": [],
+   "news": null,
+   "level": "정상"
+  },
+  {
+   "code": "003490",
+   "name": "대한항공",
+   "type": "stock",
+   "sector": "운송·창고",
+   "buy_date": "2026-11-18",
+   "buy": 31550.0,
+   "last": 31550.0,
+   "ret": 0.0,
+   "dd": 0.0,
+   "signals": [],
+   "news": null,
+   "level": "정상"
+  }
+ ],
+ "market_ok": false,
+ "kospi": 5067.44,
+ "kospi_ma": 6869.79,
+ "market_ma": 120,
+ "news_checked": false,
+ "history": []
+}

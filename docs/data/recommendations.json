@@ -1,0 +1,240 @@
+{
+ "weeks": [
+  {
+   "week": "2026-W47-tue",
+   "slot": "tue",
+   "signal_date": "2026-11-18",
+   "trade_date": "2026-11-19",
+   "strategy": "theme_flow_slow",
+   "strategy_label": "테마·수급 느린교체(60일선) + 테마 ETF 2개",
+   "mode": "bear",
+   "stopped": [],
+   "kospi_r63": -0.2738,
+   "market_ok": false,
+   "kospi_level": 5067.44,
+   "kospi_ma": 6869.79,
+   "market_ma": 120,
+   "picks": [
+    {
+     "type": "stock",
+     "code": "020560",
+     "name": "아시아나항공",
+     "rank": 1,
+     "score": 0.896,
+     "action": "BUY",
+     "exp_week": null,
+     "shares": 23,
+     "amount": 193890.0,
+     "sector": "운송·창고",
+     "sector_rank": 1,
+     "close": 8430.0,
+     "ret_21": 0.2009,
+     "ret_63": 0.1725,
+     "mom_12_1": -0.1761,
+     "near_high": 0.9612,
+     "tv_ratio": 1.12,
+     "flow_f": 0.0497,
+     "flow_i": 0.3567,
+     "per": null,
+     "pbr": 2.32,
+     "entry": null,
+     "ret": null
+    },
+    {
+     "type": "stock",
+     "code": "003490",
+     "name": "대한항공",
+     "rank": 2,
+     "score": 0.849,
+     "action": "BUY",
+     "exp_week": null,
+     "shares": 6,
+     "amount": 189300.0,
+     "sector": "운송·창고",
+     "sector_rank": 1,
+     "close": 31550.0,
+     "ret_21": 0.2111,
+     "ret_63": 0.1996,
+     "mom_12_1": 0.1814,
+     "near_high": 0.9678,
+     "tv_ratio": 1.04,
+     "flow_f": 0.0849,
+     "flow_i": 0.0864,
+     "per": 14.67,
+     "pbr": 1.06,
+     "entry": null,
+     "ret": null
+    }
+   ],
+   "sells": [],
+   "top10": [
+    {
+     "code": "020560",
+     "name": "아시아나항공",
+     "score": 0.896,
+     "sector": "운송·창고"
+    },
+    {
+     "code": "003490",
+     "name": "대한항공",
+     "score": 0.849,
+     "sector": "운송·창고"
+    },
+    {
+     "code": "011200",
+     "name": "HMM",
+     "score": 0.727,
+     "sector": "운송·창고"
+    },
+    {
+     "code": "086280",
+     "name": "현대글로비스",
+     "score": 0.656,
+     "sector": "운송·창고"
+    },
+    {
+     "code": "030190",
+     "name": "NICE평가정보",
+     "score": 0.65,
+     "sector": "IT 서비스"
+    },
+    {
+     "code": "089860",
+     "name": "롯데렌탈",
+     "score": 0.64,
+     "sector": "일반서비스"
+    },
+    {
+     "code": "122870",
+     "name": "와이지엔터테인먼트",
+     "score": 0.623,
+     "sector": "오락·문화"
+    },
+    {
+     "code": "293490",
+     "name": "카카오게임즈",
+     "score": 0.593,
+     "sector": "IT 서비스"
+    },
+    {
+     "code": "053800",
+     "name": "안랩",
+     "score": 0.531,
+     "sector": "IT 서비스"
+    },
+    {
+     "code": "328130",
+     "name": "루닛",
+     "score": 0.512,
+     "sector": "IT 서비스"
+    }
+   ],
+   "sectors": [
+    {
+     "sector": "운송·창고",
+     "rank": 1,
+     "ret_21": 0.06152902177031205,
+     "foreign_flow": 0.086,
+     "tilt": 0,
+     "n": 6
+    },
+    {
+     "sector": "오락·문화",
+     "rank": 2,
+     "ret_21": 0.14519427402862983,
+     "foreign_flow": -0.042,
+     "tilt": 0,
+     "n": 7
+    },
+    {
+     "sector": "IT 서비스",
+     "rank": 3,
+     "ret_21": 0.017793594306049876,
+     "foreign_flow": -0.007,
+     "tilt": 0,
+     "n": 17
+    },
+    {
+     "sector": "통신",
+     "rank": 4,
+     "ret_21": 0.011749347258485532,
+     "foreign_flow": -0.024,
+     "tilt": 0,
+     "n": 3
+    },
+    {
+     "sector": "일반서비스",
+     "rank": 5,
+     "ret_21": -0.06926019785624449,
+     "foreign_flow": 0.001,
+     "tilt": 0,
+     "n": 16
+    },
+    {
+     "sector": "음식료·담배",
+     "rank": 6,
+     "ret_21": 0.016260162601626105,
+     "foreign_flow": -0.062,
+     "tilt": 0,
+     "n": 9
+    },
+    {
+     "sector": "보험",
+     "rank": 7,
+     "ret_21": -0.11131352695570268,
+     "foreign_flow": 0.015,
+     "tilt": 0,
+     "n": 8
+    },
+    {
+     "sector": "제약",
+     "rank": 8,
+     "ret_21": -0.0563226855687502,
+     "foreign_flow": -0.012,
+     "tilt": 0,
+     "n": 24
+    },
+    {
+     "sector": "기타금융",
+     "rank": 9,
+     "ret_21": -0.045454545454545414,
+     "foreign_flow": -0.007,
+     "tilt": 0,
+     "n": 29
+    },
+    {
+     "sector": "금속",
+     "rank": 10,
+     "ret_21": -0.12301166489925763,
+     "foreign_flow": 0.017,
+     "tilt": 0,
+     "n": 7
+    },
+    {
+     "sector": "화학",
+     "rank": 11,
+     "ret_21": -0.12912856361490405,
+     "foreign_flow": -0.017,
+     "tilt": 0,
+     "n": 30
+    },
+    {
+     "sector": "유통",
+     "rank": 12,
+     "ret_21": -0.07092198581560283,
+     "foreign_flow": -0.058,
+     "tilt": 0,
+     "n": 17
+    }
+   ],
+   "llm_used": false,
+   "equity": 1000000.0,
+   "round_trip": 0.0043,
+   "created_at": "2026-11-19 09:12",
+   "entry_date": null,
+   "avg": null,
+   "kospi": null
+  }
+ ],
+ "updated_at": "2026-11-19 09:07"
+}
