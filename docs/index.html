@@ -242,9 +242,9 @@ footer ul{margin:0 0 16px;padding-left:18px}
 .hb-sub{font-size:16px;color:#d6e4ff}
 .hb-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .hb-chips span{font-size:12px;font-weight:600;padding:5px 11px;border-radius:99px;background:rgba(10,26,54,.75);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(2px)}
-.hb-char{position:absolute;right:56px;bottom:0;width:230px;height:230px;z-index:2;transform:scale(.46);transform-origin:50% 100%}
-.hb-char .glow{position:absolute;left:50%;bottom:10px;width:250px;height:250px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,207,92,.32),rgba(255,207,92,0) 65%)}
-.hb-char .bust{position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);width:230px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.35))}
+.hb-char{position:absolute;right:28px;bottom:0;width:300px;height:230px;z-index:2}
+.hb-char .glow{position:absolute;left:62%;bottom:-20px;width:300px;height:300px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,207,92,.32),rgba(255,207,92,0) 65%)}
+.hb-char .pose{position:absolute;right:0;bottom:0;height:226px;width:auto;filter:drop-shadow(0 8px 18px rgba(0,0,0,.45))}
 .hb-bubble{position:absolute;right:250px;top:118px;z-index:3;background:#fff;color:#0b1b3a;font-size:13px;font-weight:700;padding:9px 14px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
 .hb-bubble:after{content:"";position:absolute;right:-8px;top:12px;border:8px solid transparent;border-left-color:#fff;border-right:0}
 @media(max-width:640px){
@@ -253,10 +253,10 @@ footer ul{margin:0 0 16px;padding-left:18px}
   .hb-eyebrow{font-size:10px;letter-spacing:.12em}
   .hb-title{font-size:30px}
   .hb-sub{font-size:12px}
-  .hb-chips,.hb-bubble{display:none}
-  .hb-char{right:-14px;width:150px;height:170px;transform:scale(.5)}
-  .hb-char .bust{width:150px}
-    .hb-char .glow{width:170px;height:170px}
+  .hb-chips{display:none}
+  .hb-char{right:-6px;width:190px;height:170px}
+  .hb-char .pose{height:150px}
+  .hb-char .glow{width:190px;height:190px}
   }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@900&display=swap&text=%E7%94%B3%EC%9D%98%20%EC%84%A0%ED%83%9D" rel="stylesheet">
@@ -278,38 +278,9 @@ footer ul{margin:0 0 16px;padding-left:18px}
     <div class="hb-sub">데이터로 고르고, 원칙으로 지킨다</div>
     <div class="hb-chips"><span>주 2회 추천</span><span>하락장 방어</span><span>수수료까지 계산한 수익</span></div>
   </div>
-  <div class="hb-bubble">오늘도 원칙대로 갑니다</div>
   <div class="hb-char">
     <div class="glow"></div>
-    <svg class="bust" viewBox="0 0 240 250" role="img" aria-label="주인장 캐릭터">
-      <defs>
-        <linearGradient id="hbneck" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#b98365"/><stop offset=".45" stop-color="#d9a585"/><stop offset="1" stop-color="#e3b393"/></linearGradient>
-        <linearGradient id="hbshirt" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dfe4ee"/></linearGradient>
-        <linearGradient id="hbvest" x1="0" x2="1"><stop offset="0" stop-color="#5e1426"/><stop offset=".5" stop-color="#7d1d33"/><stop offset="1" stop-color="#5e1426"/></linearGradient>
-      </defs>
-      <!-- neck (behind chin) -->
-      <path d="M97,140 C99,158 98,172 95,186 L161,186 C158,172 157,158 159,140 Z" fill="url(#hbneck)"/>
-      <path d="M97,162 C114,174 142,174 159,162 L159,146 C142,160 114,160 97,146 Z" fill="#8a5a42" opacity=".35"/>
-      <!-- shirt body / sleeves -->
-      <path d="M8,250 C10,214 34,192 72,182 L98,176 L158,176 L184,182 C222,192 232,214 232,250 Z" fill="url(#hbshirt)"/>
-      <path d="M36,250 C38,232 44,216 52,206" fill="none" stroke="#c3cad8" stroke-width="2" opacity=".8"/>
-      <path d="M204,250 C202,232 196,216 188,206" fill="none" stroke="#c3cad8" stroke-width="2" opacity=".8"/>
-      <!-- open neck V -->
-      <path d="M98,172 L128,206 L158,172 Z" fill="#e0ad8c"/>
-      <path d="M98,172 L128,190 L158,172 Z" fill="#c18c6c" opacity=".35"/>
-      <!-- burgundy vest -->
-      <path d="M58,188 C76,182 92,180 104,180 L128,222 L152,180 C164,180 180,182 198,188 C203,212 206,232 208,250 L48,250 C50,232 53,212 58,188 Z" fill="url(#hbvest)"/>
-      <path d="M104,180 L128,222 L152,180" fill="none" stroke="#4a0f1d" stroke-width="2.5"/>
-      <path d="M58,188 C53,212 50,232 48,250 M198,188 C203,212 206,232 208,250" fill="none" stroke="#4a0f1d" stroke-width="2" opacity=".7"/>
-      <line x1="128" y1="222" x2="128" y2="250" stroke="#4a0f1d" stroke-width="1.6"/>
-      <circle cx="132" cy="232" r="2.6" fill="#d9b25c"/><circle cx="132" cy="245" r="2.6" fill="#d9b25c"/>
-      <path d="M74,226 L96,224" stroke="#4a0f1d" stroke-width="2" stroke-linecap="round"/>
-      <path d="M160,224 L182,226" stroke="#4a0f1d" stroke-width="2" stroke-linecap="round"/>
-      <!-- shirt collar -->
-      <path d="M100,164 L126,198 L114,206 L92,182 Z" fill="#ffffff" stroke="#d3d9e4" stroke-width="1"/>
-      <path d="M156,164 L130,198 L142,206 L164,182 Z" fill="#ffffff" stroke="#d3d9e4" stroke-width="1"/>
-      <image href="assets/owner.webp" x="54" y="10" width="132" height="162.2"/>
-    </svg>
+    <img class="pose" src="assets/owner2.webp" alt="주인장 캐릭터">
   </div>
 </div>
 <header>
