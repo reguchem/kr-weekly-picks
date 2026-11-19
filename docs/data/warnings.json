@@ -8,8 +8,8 @@
    "sector": "운송·창고",
    "buy_date": "2026-11-19",
    "buy": 8431.0,
-   "last": 8660.0,
-   "ret": 0.0271,
+   "last": 8730.0,
+   "ret": 0.0354,
    "dd": 0.0,
    "signals": [],
    "news": null,
@@ -17,8 +17,8 @@
   }
  ],
  "market_ok": false,
- "kospi": 5020.24,
- "kospi_ma": 6844.56,
+ "kospi": 5021.17,
+ "kospi_ma": 6844.57,
  "market_ma": 120,
  "news_checked": false,
  "history": []
