@@ -160,7 +160,7 @@ def make_recommendation(recs: dict, M: dict) -> dict | None:
         hold_info = [{"name": prev_all[c]["name"], "sector": M["sectors"].get(c) or "ETF"} for c in prev_all]
         brief = llm.market_brief(str(t.date()), _sector_rows(M["sector_table"]), hold_info)
     ctx = {"sector_tilt": (brief or {}).get("sector_outlook") or {}}
-    s = score(strat, f, fund, ctx)
+    s = score(strat, f.drop(index=[c for c in C.EXCLUDE if c in f.index]), fund, ctx)
     sec = ctx.get("sectors_table", M["sector_table"])
     sec_rank = {k: int(v) for k, v in sec["rank"].items()} if len(sec) else {}
 
