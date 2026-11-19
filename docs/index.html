@@ -85,7 +85,7 @@ section{margin-top:var(--gap)}
 .alert-line a{color:inherit}
 
 /* 추천 카드 */
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column}
 .card .badges{display:flex;gap:6px;margin-bottom:8px}
 .badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--sunk);color:var(--text2)}
@@ -159,7 +159,9 @@ footer h3{font-size:13px;color:var(--text2);margin:0 0 6px}
 footer ul{margin:0 0 16px;padding-left:18px}
 
 /* 매매 기록 */
-.trade{display:grid;grid-template-columns:1fr 1.3fr;gap:8px;margin-top:auto;padding-top:12px;border-top:1px dashed var(--line);align-items:end}
+.trade{display:grid;grid-template-columns:0.8fr 1.1fr 1.2fr;gap:8px;margin-top:auto;padding-top:12px;border-top:1px dashed var(--line);align-items:end}
+.trade .tot{display:grid;gap:2px;font-size:11px;color:var(--muted)}
+.trade .tot b{font-size:14px;color:var(--text);padding:7px 0;font-variant-numeric:tabular-nums;white-space:nowrap}
 .trade .btn{grid-column:1/-1;padding:10px}
 .card details.more{margin-top:8px;margin-bottom:12px;padding-top:0}
 .cards.mine{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
@@ -171,6 +173,11 @@ footer ul{margin:0 0 16px;padding-left:18px}
 .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--text2);font-weight:600}
 .btn:disabled{opacity:.45;cursor:default}
 .trade .msg{grid-column:1/-1;font-size:12px;min-height:0}
+.trade .amt-line{grid-column:1/-1;font-size:12px;color:var(--text2);display:flex;justify-content:space-between;font-variant-numeric:tabular-nums}
+.cashbar{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 20px;margin-bottom:12px}
+.cashbar .big{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.cashbar .it{font-size:13px;color:var(--text2)}
+.cashbar .it b{color:var(--text);font-variant-numeric:tabular-nums}
 .ok{color:var(--s3)} .err{color:var(--up)}
 .my-card .pl{font-size:22px;font-weight:700;margin-top:10px;font-variant-numeric:tabular-nums}
 .my-card .pl small{font-size:13px;font-weight:600;margin-left:6px}
@@ -239,6 +246,7 @@ footer ul{margin:0 0 16px;padding-left:18px}
 
 <section id="sec-cards">
   <div class="sec-h"><h2>추천 종목 상세</h2><span class="aside" id="cards-aside"></span></div>
+  <div id="cash-bar"></div>
   <div id="cards"></div>
 </section>
 
@@ -398,10 +406,13 @@ function renderCards(recs){
       <form class="trade" data-code="${p.code}" data-name="${p.name}" data-type="${p.type||'stock'}" onsubmit="return onBuy(event)">
         <label>수량(주)<input name="qty" type="number" inputmode="numeric" min="1" step="1" value="${p.shares||1}" required></label>
         <label>내 매수가(원)<input name="price" type="number" inputmode="decimal" min="1" step="any" value="${Math.round(p.close||0)}" required></label>
+        <div class="tot">총 매수가<b class="oa">–</b></div>
+        <div class="amt-line"><span class="mut">수수료 0.015% 포함</span><span class="left"></span></div>
         <button class="btn btn-buy">매수</button>
         <div class="msg"></div>
       </form>
     </div>`;}).join('')}</div>`;
+  el.querySelectorAll('form.trade').forEach(f => { f.addEventListener('input', () => updateOrderLine(f)); updateOrderLine(f); });
 }
 
 /* ── 보유 점검 ── */
@@ -480,7 +491,8 @@ async function onBuy(e){
   if(!store.get('kwp_token')){ setMsg(f,'먼저 아래 "내 계좌"에서 기록 연결을 해주세요.'); document.getElementById('sec-mine').scrollIntoView({behavior:'smooth'}); return false; }
   const qty = Math.floor(+f.qty.value), price = +f.price.value;
   if(!(qty>0 && price>0)){ setMsg(f,'수량과 매수가를 확인하세요.'); return false; }
-  const {pos} = computePositions(TRADES);
+  const {pos, cash} = computePositions(TRADES);
+  if(qty*price*(1+FEE) > cash + 1){ setMsg(f,`투자 가능 현금(${won(cash)})보다 주문금액이 큽니다. 수량을 줄이세요.`); return false; }
   if(!pos[f.dataset.code] && Object.keys(pos).length >= MAX_HOLD){ setMsg(f,`보유 종목이 이미 ${MAX_HOLD}개입니다. 먼저 매도 후 매수하세요.`); return false; }
   btn.disabled = true; setMsg(f,'저장 중…', true);
   try{
@@ -520,7 +532,36 @@ async function onConnect(e){
 }
 function onDisconnect(){ store.set('kwp_token', null); renderMine('이 기기에서 기록 연결을 해제했습니다.'); }
 
+function cashNow(){ return computePositions(TRADES).cash; }
+function updateOrderLine(f){
+  const amt = Math.floor(+f.qty.value||0) * (+f.price.value||0) * (1+FEE), cash = cashNow();
+  f.querySelector('.oa').textContent = amt ? won(amt) : '–';
+  const left = f.querySelector('.left'); const rest = cash - amt;
+  left.textContent = amt ? (rest >= 0 ? `매수 후 현금 ${won(rest)}` : `현금 ${won(-rest)} 부족`) : '';
+  left.className = 'left ' + (amt && rest < 0 ? 'err' : '');
+}
+function renderCashBar(){
+  const el = $('#cash-bar'); if(!el) return;
+  const {pos, cash} = computePositions(TRADES);
+  const held = Object.keys(pos).length;
+  const value = Object.values(pos).reduce((a,p)=>a + p.shares*(PRICE[p.code] ?? p.cost/p.shares), 0);
+  const total = cash + value, slot = total / 5;
+  const recorded = TRADES.length > 0;
+  el.innerHTML = `<div class="cashbar">
+    <div><div class="it">투자 가능 현금${recorded?'':' (시드 기준)'}</div><div class="big">${won(cash)}</div></div>
+    <div class="it">한 종목 권장 금액 <b>약 ${manwon(slot)}</b> <span class="mut">(총자산 ${manwon(total)} ÷ 5)</span></div>
+    <div class="it">보유 <b>${held}/${MAX_HOLD}</b> · 추가 가능 <b>${Math.max(0, MAX_HOLD-held)}종목</b></div>
+  </div>`;
+  document.querySelectorAll('#cards form.trade').forEach(updateOrderLine);
+}
+
+function updateSellLine(f){
+  const v = Math.floor(+f.qty.value||0) * (+f.price.value||0);
+  f.querySelector('.sa').textContent = v ? won(v) : '–';
+}
 function renderMine(flash){
+  renderCashBar();
+  setTimeout(() => document.querySelectorAll('#mine form.trade').forEach(f => { f.addEventListener('input', () => updateSellLine(f)); updateSellLine(f); }), 0);
   const el = $('#mine'), connected = !!store.get('kwp_token');
   const {pos, realized, cash, closed} = computePositions(TRADES);
   const rows = Object.values(pos).map(p => { const last = PRICE[p.code] ?? p.cost/p.shares/(1+FEE);
@@ -551,6 +592,7 @@ function renderMine(flash){
       <form class="trade" data-code="${r.code}" onsubmit="return onSell(event)">
         <label>수량(주)<input name="qty" type="number" inputmode="numeric" min="1" max="${r.shares}" step="1" value="${r.shares}" required></label>
         <label>내 매도가(원)<input name="price" type="number" inputmode="decimal" min="1" step="any" value="${Math.round(r.last)}" required></label>
+        <div class="tot">총 매도가<b class="sa">–</b></div>
         <button class="btn btn-sell"${connected?'':' disabled'}>저장 및 삭제</button>
         <div class="msg"></div>
       </form>
