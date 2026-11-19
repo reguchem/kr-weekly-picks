@@ -122,9 +122,10 @@ def build_market(recs: dict, last_day: pd.Timestamp, refresh_sectors: bool) -> d
     E = EtfFactors(epx["close"].loc[:last_day], epx["volume"].loc[:last_day])
     # 수급 (KRX 로그인 → 실패 시 네이버)
     start = str((last_day - pd.Timedelta(days=60)).date())
-    flow = get_flow_panel(list(names), start, str(last_day.date()))
-    if flow is None:
-        flow = get_flow_panel(list(names), start, str(last_day.date()), recent_only=True)
+    # 최근 2개월 수급은 네이버(병렬, 빠름) 우선, 실패 시 KRX
+    flow = get_flow_panel(list(names), start, str(last_day.date()), recent_only=True)
+    if flow is None or flow["foreign"].shape[1] < len(names) * 0.5:
+        flow = get_flow_panel(list(names), start, str(last_day.date())) or flow
     F = Factors(close, px["volume"].loc[:last_day], flow, sectors)
     t = close.index[-1]
     f = F.at(t)
