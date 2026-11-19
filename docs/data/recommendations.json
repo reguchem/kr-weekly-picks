@@ -42,7 +42,7 @@
       "1w": null,
       "1m": null,
       "3m": null,
-      "now": 0.0023
+      "now": 0.0035
      }
     },
     {
@@ -246,15 +246,15 @@
     "1w": null,
     "1m": null,
     "3m": null,
-    "now": 0.0106
+    "now": 0.0112
    },
    "kospi": {
     "1w": null,
     "1m": null,
     "3m": null,
-    "now": -0.0199
+    "now": -0.0166
    }
   }
  ],
- "updated_at": "2026-11-19 11:25"
+ "updated_at": "2026-11-19 11:59"
 }

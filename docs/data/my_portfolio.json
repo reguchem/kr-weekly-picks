@@ -1,6 +1,6 @@
 {
  "asof": "2026-11-19",
- "updated_at": "2026-11-19 11:43",
+ "updated_at": "2026-11-19 12:03",
  "seed": 1000000,
  "positions": [
   {
@@ -9,22 +9,22 @@
    "type": "stock",
    "shares": 11,
    "first": "2026-11-19",
-   "avg": 8431.26,
-   "last": 8730.0,
-   "value": 96030,
-   "pl": 3286,
-   "pl_pct": 0.0354
+   "avg": 8721.31,
+   "last": 8680.0,
+   "value": 95480,
+   "pl": -454,
+   "pl_pct": -0.0047
   }
  ],
- "cash": 907256,
- "stock_value": 96030,
- "total": 1003286,
+ "cash": 904066,
+ "stock_value": 95480,
+ "total": 999546,
  "realized": 0,
- "ret": 0.0033,
+ "ret": -0.0005,
  "history": [
   {
    "date": "2026-11-19",
-   "total": 1003286
+   "total": 999546
   }
  ]
 }
