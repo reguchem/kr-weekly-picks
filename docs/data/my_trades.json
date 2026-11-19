@@ -21,17 +21,6 @@
    "type": "stock",
    "shares": 6,
    "price": 31550
-  },
-  {
-   "id": "2d57ea33-ee2f-432b-ac7e-1798782b8e7a",
-   "ts": "2026-11-19T01:56:24.999Z",
-   "date": "2026-11-19",
-   "side": "SELL",
-   "code": "020560",
-   "name": "아시아나항공",
-   "type": "stock",
-   "shares": 23,
-   "price": 8690
   }
  ]
 }
