@@ -45,7 +45,7 @@ def send_warnings(date: str, items: list[dict]):
     for i in items:
         lines.append(f"{i['level']}: {i['name']} (매수 후 {i['ret']:+.1%})")
         lines += [f"  - {s}" for s in i["signals"]]
-    lines.append("참고 정보입니다. 매도 여부는 직접 판단하세요. (정기 교체: 화 08:00·목 17:00 추천)")
+    lines.append("참고 정보입니다. 매도 여부는 직접 판단하세요. (정기 교체: 화 08:00·목 16:00 추천)")
     if PAGE_URL:
         lines.append(PAGE_URL)
     try:

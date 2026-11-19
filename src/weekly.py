@@ -1,7 +1,7 @@
 """주 2회 추천 + 매일 점검.
 
 - 화요일 07:50 KST 실행: 월요일 종가 기준 추천 → 화요일 09:00 시가 매매
-- 평일 16:50 KST 실행: 보유 종목 점검·성과 갱신, 목요일은 목요일 종가 기준 추천 → 금요일 09:00 시가 매매
+- 평일 15:50 KST 실행: 보유 종목 점검·성과 갱신, 목요일은 목요일 종가 기준 추천 → 금요일 09:00 시가 매매
 수동: SLOT=tue|thu python -m src.weekly
 산출물: docs/data/recommendations.json, performance.json, warnings.json, brief.json
 """
