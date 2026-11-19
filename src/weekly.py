@@ -553,7 +553,7 @@ def run():
 
     try:                                   # 무료 시장 흐름(최근 2주)
         from . import market
-        market.build(M["t"])
+        market.build(M["t"], M)
     except Exception as e:  # noqa
         print(f"[market] 실패: {e!r}")
 

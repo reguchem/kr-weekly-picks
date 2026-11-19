@@ -704,11 +704,35 @@ function renderMarket(brief, recs, mk){
         <span class="mut num" style="font-size:12px;white-space:nowrap">${md(n.date)}</span>
         <a href="${n.link}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none;font-size:14px;flex:1">${n.title}</a>
         <span class="mut" style="font-size:11px;white-space:nowrap">${n.source}</span></li>`).join('')}</ul></div>` : '';
+  const kw = mk.keywords;
+  const kp = kw?.pick;
+  const kwPanel = kw ? `<div class="grid2" style="margin-bottom:12px">
+    <div class="panel"><b style="font-size:14px">이번 주 뉴스 키워드</b> <span class="mut" style="font-size:12px">최근 ${kw.days}일 · 기사 ${kw.articles}건</span>
+      <div class="chips" style="margin-top:10px">${kw.top_keywords.map(([w,n],i)=>`<span class="chipo" style="${i===0?'border-color:var(--up);color:var(--up);font-weight:700':''}">${w} <b class="num">${n}</b></span>`).join('')}</div>
+      ${kw.top_companies?.length?`<div class="mut" style="font-size:12px;margin-top:14px">많이 언급된 종목</div><div class="chips" style="margin-top:6px">${kw.top_companies.map(([w,n])=>`<span class="chipo">${w} <b class="num">${n}</b></span>`).join('')}</div>`:''}
+      <div class="note">기사 제목에서 일반적인 시장 용어(코스피, 외국인, 상승 등)를 빼고 센 빈도입니다.</div></div>
+    <div class="card" style="border-color:var(--up)">
+      ${kp ? `<div class="badges"><span class="badge BUY">키워드 관련 종목</span><span class="badge">'${kp.keyword}' ${kp.keyword_count}회</span></div>
+      <div class="nm">${kp.name}</div><div class="cd">${kp.code}</div><div class="ctx">${kp.sector||''}</div>
+      <div class="kv3"><div>기준 종가<b>${num(kp.close)}</b></div><div>1개월<b>${pct(kp.ret_21)}</b></div><div>52주 고가 대비<b>${Math.round(kp.near_high*100)}%</b></div></div>
+      <ul class="sig" style="margin-top:10px">
+        <li>'${kp.keyword}' 기사 중 ${kp.mentions}건에서 언급</li><li>20일선 위 · 1개월 상승(과열 40% 미만)${kp.flow_f!=null?` · 외국인 20일 ${pctP(kp.flow_f)}`:''}</li></ul>
+      ${kp.articles?.length?`<div style="margin-top:8px">${kp.articles.map(a=>`<a href="${a.link}" target="_blank" rel="noopener" style="display:block;font-size:12px;color:var(--text2);padding:3px 0">${md(a.date)} · ${a.title}</a>`).join('')}</div>`:''}
+      <form class="trade" data-code="${kp.code}" data-name="${kp.name}" data-type="stock" onsubmit="return onBuy(event)">
+        <label>수량(주)<input name="qty" type="number" inputmode="numeric" min="1" step="1" value="${Math.max(1, Math.floor(200000/kp.close))}" required></label>
+        <label>내 매수가(원)<input name="price" type="number" inputmode="decimal" min="1" step="any" value="${Math.round(kp.close)}" required></label>
+        <div class="tot">총 매수가<b class="oa">–</b></div>
+        <div class="amt-line"><span class="mut">참고용 · 백테스트 미검증</span><span class="left"></span></div>
+        <button class="btn btn-buy">매수</button><div class="msg"></div>
+      </form>` : `<b style="font-size:14px">키워드 관련 종목</b><div class="mut" style="font-size:13px;margin-top:8px">상위 키워드 관련 기사에 언급된 종목 중 추세 조건(20일선 위, 1개월 상승)을 만족하는 종목이 없습니다.</div>`}
+    </div></div>` : '';
   el.innerHTML = ai + `<div class="panel" style="margin-bottom:12px;font-size:15px;line-height:1.7"><b>요약</b> · ${mk.summary||'–'}</div>
+    ${kwPanel}
     <div class="kpis" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr))">${inds}</div>
     <div class="${secPanel?'grid2':''}" style="margin-top:12px">${flowPanel}${secPanel}</div>
     ${news?`<div style="margin-top:12px">${news}</div>`:''}
     <div class="note">${md(mk.asof)} 기준 · 국내 지수·수급: 네이버·KRX, 해외 지표: Yahoo Finance, 뉴스: 연합뉴스·한국경제·매일경제 RSS · 최근 2주 범위만 표시</div>`;
+  el.querySelectorAll('form.trade').forEach(f => { f.addEventListener('input', () => updateOrderLine(f)); updateOrderLine(f); });
   if(fl) new Chart($('#c-flow'), {type:'bar',
     data:{labels: fl.dates.map(md), datasets:[
       {label:'외국인', data:fl.foreign, backgroundColor:css('--s1'), borderRadius:3},
