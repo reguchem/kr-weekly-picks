@@ -551,6 +551,12 @@ def run():
     for i in warn["items"]:
         print(f"[점검] {i['name']}: {i['level']} {i['signals']}")
 
+    try:                                   # 무료 시장 흐름(최근 2주)
+        from . import market
+        market.build(M["t"])
+    except Exception as e:  # noqa
+        print(f"[market] 실패: {e!r}")
+
     update_performance(recs)
     recs["updated_at"] = now.strftime("%Y-%m-%d %H:%M")
     REC_PATH.write_text(json.dumps(recs, ensure_ascii=False, indent=1))

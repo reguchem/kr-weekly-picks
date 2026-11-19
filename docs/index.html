@@ -646,23 +646,78 @@ function renderPerf(perf){
 }
 
 /* ── 시장 ── */
-function renderMarket(brief, recs){
+function spark(vals, up){
+  if(!vals || vals.length < 2) return '';
+  const w = 120, h = 32, mn = Math.min(...vals), mx = Math.max(...vals), r = (mx-mn)||1;
+  const pts = vals.map((v,i)=>`${(i/(vals.length-1)*w).toFixed(1)},${(h-2-(v-mn)/r*(h-4)).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="${up?css('--up'):css('--down')}" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>`;
+}
+const eok = x => x==null ? '–' : (Math.abs(x)>=1e4 ? `${sign(x)}${(x/1e4).toFixed(1)}조` : `${sign(x)}${Math.round(x).toLocaleString('ko-KR')}억`);
+function fmtInd(i){
+  const v = i.last;
+  if(i.unit==='%') return v.toFixed(2)+'%';
+  if(i.unit==='$') return '$'+v.toFixed(1);
+  if(i.unit==='원') return Math.round(v).toLocaleString('ko-KR')+'원';
+  return v >= 1000 ? Math.round(v).toLocaleString('ko-KR') : v.toFixed(1);
+}
+function chg(i, k){ const c = i[k]; if(c==null) return '–';
+  if(i.chg_unit==='%p') return `<span class="num ${c>0?'up':c<0?'down':''}">${sign(c)}${c.toFixed(2)}%p</span>`;
+  return pct(c); }
+
+function renderMarket(brief, recs, mk){
   const el = $('#market');
   const w = recs?.weeks?.at(-1), secs = (w?.sectors||[]);
-  const b = brief;
-  if(b) $('#brief-aside').textContent = `${md(b.date)} Claude 뉴스 분석`;
-  const left = b ? `<div class="brief">
+  const ref = mk?.asof ? new Date(mk.asof+'T00:00:00') : new Date();
+  const fresh = d => d && (ref - new Date(d+'T00:00:00')) <= 14*864e5;   // 최근 2주만
+  const b = brief && fresh(brief.date) ? brief : null;
+  if(mk?.asof){ const st = new Date(ref); st.setDate(st.getDate()-14);
+    $('#brief-aside').textContent = `최근 2주 · ${st.getMonth()+1}/${st.getDate()} ~ ${md(mk.asof)}`; }
+  const ai = b ? `<div class="panel" style="margin-bottom:12px"><div class="brief">
+      <div class="mut" style="font-size:12px;margin-bottom:6px">AI 뉴스 분석 · ${md(b.date)}</div>
       <p style="font-size:15px">${b.summary||''}</p>
       ${b.foreign?`<p><b>외국인</b> ${b.foreign}</p>`:''}${b.domestic?`<p><b>국내</b> ${b.domestic}</p>`:''}${b.global?`<p><b>세계</b> ${b.global}</p>`:''}
-      ${b.risks?.length?`<p style="margin-top:14px"><b>주요 위험</b></p><ul class="sig" style="margin-bottom:12px">${b.risks.map(r=>`<li>${r}</li>`).join('')}</ul>`:''}
       ${Object.keys(b.sector_outlook||{}).length?`<div class="chips">${Object.entries(b.sector_outlook).map(([k,v])=>`<span class="chipo" title="${(b.sector_reason||{})[k]||''}">${k} ${v>0?'▲':v<0?'▼':'–'}</span>`).join('')}</div>`:''}
-    </div>` : `<div class="mut" style="font-size:14px">뉴스 브리핑 없음 — 저장소 Secrets에 ANTHROPIC_API_KEY를 넣으면 화·목 추천 때마다 자동 작성됩니다.</div>`;
+    </div></div>` : '';
+  if(!mk){ el.innerHTML = ai + `<div class="empty">시장 데이터가 아직 없습니다. 매일 17:00 자동 실행 후 표시됩니다.</div>`; return; }
+  const inds = (mk.indicators||[]).map(i => `<div class="kpi" style="padding:12px 14px">
+      <div class="l">${i.name}</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:2px">
+        <b class="num" style="font-size:17px">${fmtInd(i)}</b><span style="font-size:12px">${chg(i,'chg_2w')}</span></div>
+      <div style="margin-top:6px">${spark(i.spark, (i.chg_2w||0)>=0)}</div>
+      <div class="s">1주 ${chg(i,'chg_1w')} · 2주 ${chg(i,'chg_2w')}</div></div>`).join('');
+  const fl = mk.flows;
+  const flowPanel = fl ? `<div class="panel">
+      <b style="font-size:14px">KOSPI 투자자별 순매수 (억원)</b>
+      <div class="chart" style="height:200px;margin-top:8px"><canvas id="c-flow"></canvas></div>
+      <table style="margin-top:8px"><thead><tr><th class="l"></th><th>최근 1주</th><th>최근 2주</th></tr></thead><tbody>
+        <tr><td class="l">외국인${Math.abs(fl.foreign_streak)>=3?` <span class="mut">(${Math.abs(fl.foreign_streak)}일 연속 ${fl.foreign_streak>0?'순매수':'순매도'})</span>`:''}</td><td class="num ${fl.sum_1w.foreign>0?'up':'down'}">${eok(fl.sum_1w.foreign)}</td><td class="num ${fl.sum_2w.foreign>0?'up':'down'}">${eok(fl.sum_2w.foreign)}</td></tr>
+        <tr><td class="l">기관</td><td class="num ${fl.sum_1w.inst>0?'up':'down'}">${eok(fl.sum_1w.inst)}</td><td class="num ${fl.sum_2w.inst>0?'up':'down'}">${eok(fl.sum_2w.inst)}</td></tr>
+        <tr><td class="l">개인</td><td class="num ${fl.sum_1w.indiv>0?'up':'down'}">${eok(fl.sum_1w.indiv)}</td><td class="num ${fl.sum_2w.indiv>0?'up':'down'}">${eok(fl.sum_2w.indiv)}</td></tr>
+      </tbody></table></div>` : `<div class="panel mut" style="font-size:13px">수급 데이터 없음</div>`;
   const top = secs.slice(0,6);
-  const right = top.length ? `<table>
-      <thead><tr><th class="l">업종 강도</th><th>1개월</th><th>외국인</th></tr></thead>
+  const secPanel = top.length ? `<div class="panel"><b style="font-size:14px">업종 강도 순위</b><table style="margin-top:4px">
+      <thead><tr><th class="l">업종</th><th>1개월</th><th>외국인</th></tr></thead>
       <tbody>${top.map(s=>`<tr><td class="l"><span class="mut num" style="display:inline-block;width:18px">${s.rank}</span>${s.sector}${s.rank<=3?' <span class="badge BUY" style="margin-left:4px">후보</span>':''}${s.tilt?` <span class="mut">${s.tilt>0?'▲':'▼'}</span>`:''}</td><td>${pct(s.ret_21)}</td><td>${s.foreign_flow==null?'–':pct(s.foreign_flow)}</td></tr>`).join('')}</tbody></table>
-      <div class="note">상위 3개 업종에서만 신규 편입 · ▲▼ 뉴스 전망</div>` : '';
-  el.innerHTML = `<div class="panel"><div class="grid2"><div>${left}</div><div>${right}</div></div></div>`;
+      <div class="note">${md(w.signal_date)} 기준 · 상위 3개 업종에서만 신규 편입</div></div>` : '';
+  const news = (mk.news||[]).length ? `<div class="panel"><b style="font-size:14px">주요 뉴스 (최근 2주)</b>
+      <ul style="list-style:none;margin:8px 0 0;padding:0">${mk.news.map(n=>`<li style="padding:8px 0;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:baseline">
+        <span class="mut num" style="font-size:12px;white-space:nowrap">${md(n.date)}</span>
+        <a href="${n.link}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none;font-size:14px;flex:1">${n.title}</a>
+        <span class="mut" style="font-size:11px;white-space:nowrap">${n.source}</span></li>`).join('')}</ul></div>` : '';
+  el.innerHTML = ai + `<div class="panel" style="margin-bottom:12px;font-size:15px;line-height:1.7"><b>요약</b> · ${mk.summary||'–'}</div>
+    <div class="kpis" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr))">${inds}</div>
+    <div class="${secPanel?'grid2':''}" style="margin-top:12px">${flowPanel}${secPanel}</div>
+    ${news?`<div style="margin-top:12px">${news}</div>`:''}
+    <div class="note">${md(mk.asof)} 기준 · 국내 지수·수급: 네이버·KRX, 해외 지표: Yahoo Finance, 뉴스: 연합뉴스·한국경제·매일경제 RSS · 최근 2주 범위만 표시</div>`;
+  if(fl) new Chart($('#c-flow'), {type:'bar',
+    data:{labels: fl.dates.map(md), datasets:[
+      {label:'외국인', data:fl.foreign, backgroundColor:css('--s1'), borderRadius:3},
+      {label:'기관', data:fl.inst, backgroundColor:css('--s2'), borderRadius:3}]},
+    options:{responsive:true, maintainAspectRatio:false, animation:false,
+      plugins:{legend:{position:'top', align:'start', labels:{color:css('--text2'), boxWidth:10, boxHeight:10}},
+        tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${eok(c.parsed.y)}`}}},
+      scales:{x:{ticks:{color:css('--text2'), maxRotation:0, autoSkip:true, maxTicksLimit:innerWidth<640?5:10}, grid:{display:false}},
+              y:{ticks:{color:css('--text2'), maxTicksLimit:5, callback:v=>eok(v)}, grid:{color:css('--grid')}}}}});
 }
 
 /* ── 이력 ── */
@@ -713,14 +768,14 @@ function renderBT(bt){
 }
 
 (async () => {
-  const [recs, perf, bt, warn, brief] = await Promise.all(['data/recommendations.json','data/performance.json','data/backtest.json','data/warnings.json','data/brief.json'].map(load));
+  const [recs, perf, bt, warn, brief, mk] = await Promise.all(['data/recommendations.json','data/performance.json','data/backtest.json','data/warnings.json','data/brief.json','data/market.json'].map(load));
   $('#meta').textContent = `업데이트 ${perf?.updated_at || recs?.updated_at || '–'} · 추천: 화 08:00(월 종가)·목 17:00(목 종가) → 다음 거래일 시가 매매 · 보유 종목 매일 점검`;
   PORT = await load('data/my_portfolio.json');
   (recs?.weeks?.at(-1)?.picks||[]).forEach(p => { if(p.close) PRICE[p.code] = p.close; });
   (warn?.items||[]).forEach(i => { if(i.last) PRICE[i.code] = i.last; });
   (PORT?.positions||[]).forEach(p => { if(p.last) PRICE[p.code] = p.last; });
   await loadTrades();
-  renderHero(recs, warn, perf); renderCards(recs); renderWarn(warn); renderMine(); renderPerf(perf); renderMarket(brief, recs); renderHist(recs); renderBT(bt);
+  renderHero(recs, warn, perf); renderCards(recs); renderWarn(warn); renderMine(); renderPerf(perf); renderMarket(brief, recs, mk); renderHist(recs); renderBT(bt);
 })();
 </script>
 </body>
