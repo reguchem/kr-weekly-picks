@@ -391,7 +391,40 @@ def get_flow_history(code: str, start: str, end: str) -> pd.DataFrame | None:
         return None
 
 
+def _flow_naver_api(code: str, size: int = 60) -> pd.DataFrame | None:
+    """네이버 증권 모바일 API: 일별 외국인·기관 순매수 '주식수' × 종가 → 금액"""
+    r = _get(f"https://m.stock.naver.com/api/stock/{code}/trend", params={"pageSize": size}, retries=2, timeout=8)
+    js = r.json()
+    items = js if isinstance(js, list) else (js.get("trends") or js.get("result") or js.get("list") or [])
+    rows = []
+    for x in items:
+        d = str(x.get("bizdate") or x.get("localTradedAt") or x.get("date") or "")[:10].replace("-", "").replace(".", "")
+        if len(d) != 8:
+            continue
+        px = _num(x.get("closePrice"))
+        f = _num(x.get("foreignerPureBuyQuant"))
+        i = _num(x.get("organPureBuyQuant"))
+        if np.isnan(px) or (np.isnan(f) and np.isnan(i)):
+            continue
+        rows.append({"date": pd.Timestamp(d), "foreign": f * px, "inst": i * px})
+    if not rows:
+        _set_flow_err(f"naver api {code}: 항목 없음 keys={list(js)[:8] if isinstance(js, dict) else type(js).__name__} "
+                      f"sample={str(items[:1] if isinstance(items, list) else js)[:300]}")
+        return None
+    return pd.DataFrame(rows).drop_duplicates("date").set_index("date").sort_index()
+
+
 def get_flow_recent_naver(code: str, pages: int = 2) -> pd.DataFrame | None:
+    try:
+        df = _flow_naver_api(code)
+        if df is not None and len(df):
+            return df
+    except Exception as e:
+        _set_flow_err(f"naver api {code}: {e!r}")
+    return _flow_naver_html(code, pages)
+
+
+def _flow_naver_html(code: str, pages: int = 2) -> pd.DataFrame | None:
     """네이버 '외국인·기관 매매' 탭 최근 ~40거래일. 순매매 '주식수'×종가로 대금 환산."""
     rows = []
     try:
