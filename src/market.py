@@ -147,7 +147,7 @@ def news(asof: pd.Timestamp, limit=10):
     items, seen = [], set()
     for src, url in RSS:
         try:
-            r = _get(url, timeout=15)
+            r = _get(url, retries=1, timeout=10)
             root = ET.fromstring(r.content)
             for it in root.iter("item"):
                 title = (it.findtext("title") or "").strip()
@@ -175,14 +175,18 @@ def news(asof: pd.Timestamp, limit=10):
 
 
 def _naver_mainnews(asof: pd.Timestamp, days=KW_DAYS, pages=3):
-    out = []
+    out, fails = [], 0
     for i in range(days + 1):
+        if fails >= 2:                   # 접속이 막히면 바로 포기(RSS로 대체)
+            print("[market] 네이버 주요뉴스 접속 실패 → RSS만 사용")
+            break
         d = (asof - pd.Timedelta(days=i)).strftime("%Y-%m-%d")
         for pg in range(1, pages + 1):
             try:
                 html = _get("https://finance.naver.com/news/mainnews.naver", params={"date": d, "page": pg},
-                            timeout=15).content.decode("euc-kr", errors="ignore")
+                            retries=1, timeout=8).content.decode("euc-kr", errors="ignore")
             except Exception:
+                fails += 1
                 break
             found = re.findall(r'articleSubject">\s*<a href="([^"]+)"[^>]*>([^<]+)</a>', html)
             for link, title in found:
@@ -218,7 +222,7 @@ def weekly_keywords(asof: pd.Timestamp, M: dict | None):
         arts = _naver_mainnews(asof)
         for src, url in RSS:                                   # RSS도 합침(7일 범위)
             try:
-                root = ET.fromstring(_get(url, timeout=15).content)
+                root = ET.fromstring(_get(url, retries=1, timeout=10).content)
                 for it in root.iter("item"):
                     try:
                         d = parsedate_to_datetime(it.findtext("pubDate") or "").astimezone(KST).replace(tzinfo=None)
