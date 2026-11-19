@@ -398,7 +398,15 @@ def get_flow_recent_naver(code: str, pages: int = 2) -> pd.DataFrame | None:
         for p in range(1, pages + 1):
             html = _html(_get("https://finance.naver.com/item/frgn.naver",
                         params={"code": code, "page": p}, retries=2, timeout=8))
-            for t in pd.read_html(pd.io.common.StringIO(html)):
+            try:
+                tables = pd.read_html(pd.io.common.StringIO(html))
+            except ValueError:
+                i = html.find("외국인")
+                _set_flow_err(f"naver frgn {code}: 표 없음 len={len(html)} 외국인@{i} "
+                              f"title={re.search(r'<title>(.*?)</title>', html, re.S).group(1).strip()[:60] if '<title>' in html else None!r} "
+                              f"snip={re.sub(r'\\s+', ' ', html[max(i - 200, 0):i + 400])!r}")
+                return None
+            for t in tables:
                 cols = [" ".join(map(str, c)) if isinstance(c, tuple) else str(c) for c in t.columns]
                 if any("외국인" in c for c in cols) and any("기관" in c for c in cols):
                     t.columns = cols
