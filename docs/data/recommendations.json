@@ -42,7 +42,7 @@
       "1w": null,
       "1m": null,
       "3m": null,
-      "now": 0.0058
+      "now": 0.0104
      }
     },
     {
@@ -72,7 +72,7 @@
       "1w": null,
       "1m": null,
       "3m": null,
-      "now": 0.0188
+      "now": 0.0173
      }
     }
    ],
@@ -246,7 +246,7 @@
     "1w": null,
     "1m": null,
     "3m": null,
-    "now": 0.0123
+    "now": 0.0138
    },
    "kospi": {
     "1w": null,
@@ -272,51 +272,51 @@
    "picks": [
     {
      "type": "stock",
-     "code": "041510",
-     "name": "에스엠",
-     "rank": 1,
-     "score": 0.773,
+     "code": "022100",
+     "name": "포스코DX",
+     "rank": 2,
+     "score": 0.62,
      "action": "BUY",
      "exp_week": null,
-     "shares": 2,
-     "amount": 188600.0,
-     "sector": "오디오물 출판 및 원판 녹음업",
+     "shares": 9,
+     "amount": 198450.0,
+     "sector": "건축기술, 엔지니어링 및 관련 기술 서비스업",
      "sector_rank": 1,
-     "close": 94300.0,
-     "ret_21": 0.0952,
-     "ret_63": 0.3282,
-     "mom_12_1": -0.1608,
-     "near_high": 0.6985,
-     "tv_ratio": 1.55,
-     "flow_f": null,
-     "flow_i": null,
-     "per": 6.27,
-     "pbr": 2.17,
+     "close": 22050.0,
+     "ret_21": 0.097,
+     "ret_63": 0.0862,
+     "mom_12_1": -0.2087,
+     "near_high": 0.5146,
+     "tv_ratio": 0.35,
+     "flow_f": 0.1152,
+     "flow_i": 0.0635,
+     "per": 64.58,
+     "pbr": 5.9,
      "entry": null,
      "ret": null
     },
     {
      "type": "stock",
-     "code": "086450",
-     "name": "동국제약",
-     "rank": 2,
-     "score": 0.743,
+     "code": "181710",
+     "name": "NHN",
+     "rank": 4,
+     "score": 0.564,
      "action": "BUY",
      "exp_week": null,
-     "shares": 7,
-     "amount": 186200.0,
-     "sector": "의약품 제조업",
-     "sector_rank": 2,
-     "close": 26600.0,
-     "ret_21": 0.0924,
-     "ret_63": 0.4615,
-     "mom_12_1": 0.3986,
-     "near_high": 0.8896,
-     "tv_ratio": 1.16,
-     "flow_f": null,
-     "flow_i": null,
-     "per": 17.89,
-     "pbr": 1.81,
+     "shares": 3,
+     "amount": 192300.0,
+     "sector": "소프트웨어 개발 및 공급업",
+     "sector_rank": 3,
+     "close": 64100.0,
+     "ret_21": 0.1226,
+     "ret_63": -0.0908,
+     "mom_12_1": 1.0,
+     "near_high": 0.7983,
+     "tv_ratio": 1.74,
+     "flow_f": 0.0006,
+     "flow_i": 0.0375,
+     "per": 62.66,
+     "pbr": 1.35,
      "entry": null,
      "ret": null
     }
@@ -332,172 +332,172 @@
    ],
    "top10": [
     {
-     "code": "041510",
-     "name": "에스엠",
-     "score": 0.773,
-     "sector": "오디오물 출판 및 원판 녹음업"
+     "code": "028050",
+     "name": "삼성E&A",
+     "score": 0.82,
+     "sector": "건축기술, 엔지니어링 및 관련 기술 서비스업"
     },
     {
-     "code": "086450",
-     "name": "동국제약",
-     "score": 0.743,
-     "sector": "의약품 제조업"
+     "code": "022100",
+     "name": "포스코DX",
+     "score": 0.62,
+     "sector": "건축기술, 엔지니어링 및 관련 기술 서비스업"
+    },
+    {
+     "code": "053800",
+     "name": "안랩",
+     "score": 0.582,
+     "sector": "소프트웨어 개발 및 공급업"
+    },
+    {
+     "code": "181710",
+     "name": "NHN",
+     "score": 0.564,
+     "sector": "소프트웨어 개발 및 공급업"
+    },
+    {
+     "code": "293490",
+     "name": "카카오게임즈",
+     "score": 0.559,
+     "sector": "소프트웨어 개발 및 공급업"
+    },
+    {
+     "code": "041510",
+     "name": "에스엠",
+     "score": 0.532,
+     "sector": "오디오물 출판 및 원판 녹음업"
     },
     {
      "code": "035900",
      "name": "JYP Ent.",
-     "score": 0.737,
+     "score": 0.527,
      "sector": "오디오물 출판 및 원판 녹음업"
     },
     {
-     "code": "280360",
-     "name": "롯데웰푸드",
-     "score": 0.631,
-     "sector": "기타 식품 제조업"
+     "code": "068270",
+     "name": "셀트리온",
+     "score": 0.505,
+     "sector": "기초 의약물질 제조업"
     },
     {
-     "code": "028050",
-     "name": "삼성E&A",
-     "score": 0.625,
-     "sector": "건축기술, 엔지니어링 및 관련 기술 서비스업"
+     "code": "302440",
+     "name": "SK바이오사이언스",
+     "score": 0.473,
+     "sector": "기초 의약물질 제조업"
     },
     {
      "code": "352820",
      "name": "하이브",
-     "score": 0.588,
+     "score": 0.409,
      "sector": "오디오물 출판 및 원판 녹음업"
-    },
-    {
-     "code": "009420",
-     "name": "한올바이오파마",
-     "score": 0.575,
-     "sector": "의약품 제조업"
-    },
-    {
-     "code": "006280",
-     "name": "녹십자",
-     "score": 0.559,
-     "sector": "의약품 제조업"
-    },
-    {
-     "code": "271560",
-     "name": "오리온",
-     "score": 0.529,
-     "sector": "기타 식품 제조업"
-    },
-    {
-     "code": "003090",
-     "name": "대웅",
-     "score": 0.512,
-     "sector": "의약품 제조업"
     }
    ],
    "sectors": [
     {
-     "sector": "오디오물 출판 및 원판 녹음업",
+     "sector": "건축기술, 엔지니어링 및 관련 기술 서비스업",
      "rank": 1,
-     "ret_21": 0.09523809523809534,
-     "foreign_flow": null,
+     "ret_21": -0.0065650010815487825,
+     "foreign_flow": 0.074,
+     "tilt": 0,
+     "n": 4
+    },
+    {
+     "sector": "오디오물 출판 및 원판 녹음업",
+     "rank": 2,
+     "ret_21": 0.09175377468060386,
+     "foreign_flow": -0.004,
+     "tilt": 0,
+     "n": 3
+    },
+    {
+     "sector": "소프트웨어 개발 및 공급업",
+     "rank": 3,
+     "ret_21": 0.012358393408856916,
+     "foreign_flow": 0.029,
+     "tilt": 0,
+     "n": 11
+    },
+    {
+     "sector": "기초 의약물질 제조업",
+     "rank": 4,
+     "ret_21": -0.05921052631578949,
+     "foreign_flow": 0.018,
+     "tilt": 0,
+     "n": 9
+    },
+    {
+     "sector": "화학섬유 제조업",
+     "rank": 5,
+     "ret_21": 0.001908396946564972,
+     "foreign_flow": 0.046,
      "tilt": 0,
      "n": 3
     },
     {
      "sector": "의약품 제조업",
-     "rank": 2,
-     "ret_21": -0.02805888724553507,
-     "foreign_flow": null,
+     "rank": 6,
+     "ret_21": -0.029954621842691487,
+     "foreign_flow": -0.037,
      "tilt": 0,
      "n": 12
     },
     {
-     "sector": "기타 식품 제조업",
-     "rank": 3,
-     "ret_21": 0.01739316010118619,
-     "foreign_flow": null,
-     "tilt": 0,
-     "n": 6
-    },
-    {
-     "sector": "건축기술, 엔지니어링 및 관련 기술 서비스업",
-     "rank": 4,
-     "ret_21": -0.005562765880741227,
-     "foreign_flow": null,
-     "tilt": 0,
-     "n": 4
-    },
-    {
-     "sector": "기초 의약물질 제조업",
-     "rank": 5,
-     "ret_21": -0.0635964912280702,
-     "foreign_flow": null,
-     "tilt": 0,
-     "n": 9
-    },
-    {
      "sector": "전기 통신업",
-     "rank": 6,
-     "ret_21": 0.022911051212938016,
-     "foreign_flow": null,
+     "rank": 7,
+     "ret_21": 0.02358490566037741,
+     "foreign_flow": -0.003,
      "tilt": 0,
      "n": 3
     },
     {
+     "sector": "기타 식품 제조업",
+     "rank": 8,
+     "ret_21": 0.01308738480240984,
+     "foreign_flow": -0.065,
+     "tilt": 0,
+     "n": 6
+    },
+    {
+     "sector": "절연선 및 케이블 제조업",
+     "rank": 9,
+     "ret_21": -0.09280844695710011,
+     "foreign_flow": -0.007,
+     "tilt": 0,
+     "n": 4
+    },
+    {
+     "sector": "보험업",
+     "rank": 10,
+     "ret_21": -0.08826695371367066,
+     "foreign_flow": 0.013,
+     "tilt": 0,
+     "n": 7
+    },
+    {
      "sector": "기타 금융업",
-     "rank": 7,
-     "ret_21": -0.043474180748454605,
-     "foreign_flow": null,
+     "rank": 11,
+     "ret_21": -0.04445650930614331,
+     "foreign_flow": -0.021,
      "tilt": 0,
      "n": 30
     },
     {
-     "sector": "소프트웨어 개발 및 공급업",
-     "rank": 8,
-     "ret_21": -0.018226983689794696,
-     "foreign_flow": null,
-     "tilt": 0,
-     "n": 12
-    },
-    {
-     "sector": "화학섬유 제조업",
-     "rank": 9,
-     "ret_21": 0.003816793893129722,
-     "foreign_flow": null,
-     "tilt": 0,
-     "n": 3
-    },
-    {
-     "sector": "절연선 및 케이블 제조업",
-     "rank": 10,
-     "ret_21": -0.09280844695710011,
-     "foreign_flow": null,
-     "tilt": 0,
-     "n": 4
-    },
-    {
-     "sector": "종합 소매업",
-     "rank": 11,
-     "ret_21": 0.03583555663351923,
-     "foreign_flow": null,
-     "tilt": 0,
-     "n": 6
-    },
-    {
-     "sector": "보험업",
+     "sector": "자동차 신품 부품 제조업",
      "rank": 12,
-     "ret_21": -0.08826695371367066,
-     "foreign_flow": null,
+     "ret_21": -0.013005780346820761,
+     "foreign_flow": 0.024,
      "tilt": 0,
-     "n": 7
+     "n": 5
     }
    ],
    "llm_used": false,
-   "equity": 999986.0,
+   "equity": 1000316.0,
    "round_trip": 0.0043,
-   "created_at": "2026-11-19 17:18",
+   "created_at": "2026-11-19 17:27",
    "entry_date": null,
    "avg": null,
    "kospi": null
   }
  ],
- "updated_at": "2026-11-19 17:24"
+ "updated_at": "2026-11-19 17:27"
 }
