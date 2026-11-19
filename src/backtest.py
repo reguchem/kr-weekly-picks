@@ -225,7 +225,7 @@ def run():
         "generated_at": now,
         "period": [str(weekly.index[0].date()), str(weekly.index[-1].date())],
         "in_sample_end": C.IN_SAMPLE_END,
-        "universe": f"KOSPI+KOSDAQ 시가총액 상위 {len(codes)}종목 (현재 기준)",
+        "universe": f"{'+'.join(C.UNIVERSE_MARKETS)} 시가총액 상위 {len(codes)}종목 (현재 기준)",
         "has_value_factor": has_value,
         "has_flow": flow is not None, "has_sectors": bool(sectors),
         "costs": {"buy": C.BUY_COST, "sell": C.SELL_COST},

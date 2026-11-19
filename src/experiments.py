@@ -167,6 +167,7 @@ def run():
               f"{results[key]['cagr_max']:+.1%}) 샤프 {a['sharpe']:.2f} MDD {a['mdd']:.1%} "
               f"검증CAGR {a['oos_cagr']:+.1%} 검증MDD {a['oos_mdd']:.1%} 매수/년 {a['buys_per_year']:.0f} "
               f"전액현금주 {a['cash_weeks']:.0%} 손절/년 {a['stops_per_year']:.1f} 100만원→ {results[key]['tue_final_krw']:,.0f}원")
+    print(f"[유니버스] {'+'.join(C.UNIVERSE_MARKETS)} 시가총액 상위 {len(codes)}종목")
     print(f"[참고] KOSPI 평균CAGR {results['H1']['bench_cagr']:+.1%}, 2022년 이후 {results['H1']['oos_bench']:+.1%}")
     print("[최근 화요일 선정]", now_picks)
 

@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: data-update
+  group: weekly
   cancel-in-progress: false
 
 jobs:

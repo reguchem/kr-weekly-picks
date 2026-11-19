@@ -60,9 +60,13 @@ def _clean_universe(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ───────────────────────── 유니버스 ─────────────────────────
-def _universe_naver_api(top_n):
+def _pages(top_n, per):
+    return int(top_n * 1.6 / per) + 2      # 우선주·ETF·스팩 제외분 여유
+
+
+def _universe_naver_api(top_n, markets):
     rows = []
-    for market, pages in (("KOSPI", 6), ("KOSDAQ", 3)):
+    for market, pages in ((m, _pages(top_n, 100)) for m in markets):
         for p in range(1, pages + 1):
             r = _get(f"https://m.stock.naver.com/api/stocks/marketValue/{market}",
                      params={"page": p, "pageSize": 100})
@@ -74,9 +78,9 @@ def _universe_naver_api(top_n):
     return rows
 
 
-def _universe_naver_html(top_n):
+def _universe_naver_html(top_n, markets):
     rows = []
-    for sosok, market, pages in ((0, "KOSPI", 10), (1, "KOSDAQ", 5)):
+    for sosok, market, pages in ((0 if m == "KOSPI" else 1, m, _pages(top_n, 50)) for m in markets):
         for p in range(1, pages + 1):
             r = _get("https://finance.naver.com/sise/sise_market_sum.naver",
                      params={"sosok": sosok, "page": p})
@@ -90,11 +94,11 @@ def _universe_naver_html(top_n):
     return rows
 
 
-def _universe_pykrx(top_n):
+def _universe_pykrx(top_n, markets):
     from pykrx import stock
     d = stock.get_nearest_business_day_in_a_week()
     rows = []
-    for market in ("KOSPI", "KOSDAQ"):
+    for market in markets:
         cap = stock.get_market_cap(d, market=market)
         for code, r in cap.iterrows():
             rows.append({"code": code, "name": stock.get_market_ticker_name(code),
@@ -102,16 +106,18 @@ def _universe_pykrx(top_n):
     return rows
 
 
-def get_universe(top_n: int) -> pd.DataFrame:
+def get_universe(top_n: int, markets=None) -> pd.DataFrame:
     """시가총액 상위 종목. columns: code, name, market, mcap"""
+    from .config import UNIVERSE_MARKETS
+    markets = tuple(markets or UNIVERSE_MARKETS)
     if SYNTHETIC:
         return _synthetic_universe(top_n)
     errors = []
     for fn in (_universe_naver_api, _universe_naver_html, _universe_pykrx):
         try:
-            df = _clean_universe(pd.DataFrame(fn(top_n)))
+            df = _clean_universe(pd.DataFrame(fn(top_n, markets)))
             if len(df) >= min(top_n, 100):
-                print(f"[universe] {fn.__name__}: {len(df)} 종목")
+                print(f"[universe] {fn.__name__}: {'+'.join(markets)} 상위 {min(top_n, len(df))} / 수집 {len(df)} 종목")
                 return df.head(top_n)
             errors.append(f"{fn.__name__}: {len(df)}개뿐")
         except Exception as e:  # noqa
