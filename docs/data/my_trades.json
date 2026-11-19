@@ -10,17 +10,6 @@
    "type": "stock",
    "shares": 11,
    "price": 8720
-  },
-  {
-   "id": "e3897f11-ba62-4be5-bd61-08c64c795d1e",
-   "ts": "2026-11-19T03:01:11.022Z",
-   "date": "2026-11-19",
-   "side": "BUY",
-   "code": "323410",
-   "name": "카카오뱅크",
-   "type": "stock",
-   "shares": 9,
-   "price": 21600
   }
  ]
 }
