@@ -1,3 +1,15 @@
 {
- "trades": []
+ "trades": [
+  {
+   "id": "6ad64a70-3379-4fbc-b795-cccba2c6fc73",
+   "ts": "2026-11-19T02:09:44.496Z",
+   "date": "2026-11-19",
+   "side": "BUY",
+   "code": "020560",
+   "name": "아시아나항공",
+   "type": "stock",
+   "shares": 11,
+   "price": 8430
+  }
+ ]
 }
