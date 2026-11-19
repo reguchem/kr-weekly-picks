@@ -42,7 +42,7 @@
       "1w": null,
       "1m": null,
       "3m": null,
-      "now": 0.0069
+      "now": 0.0058
      }
     },
     {
@@ -246,7 +246,7 @@
     "1w": null,
     "1m": null,
     "3m": null,
-    "now": 0.0121
+    "now": 0.0115
    },
    "kospi": {
     "1w": null,
@@ -274,19 +274,19 @@
      "type": "stock",
      "code": "041510",
      "name": "에스엠",
-     "rank": 2,
-     "score": 0.749,
+     "rank": 1,
+     "score": 0.773,
      "action": "BUY",
      "exp_week": null,
      "shares": 2,
-     "amount": 188400.0,
+     "amount": 188600.0,
      "sector": "오디오물 출판 및 원판 녹음업",
      "sector_rank": 1,
-     "close": 94200.0,
-     "ret_21": 0.0941,
-     "ret_63": 0.3268,
+     "close": 94300.0,
+     "ret_21": 0.0952,
+     "ret_63": 0.3282,
      "mom_12_1": -0.1608,
-     "near_high": 0.6978,
+     "near_high": 0.6985,
      "tv_ratio": 1.55,
      "flow_f": null,
      "flow_i": null,
@@ -297,26 +297,26 @@
     },
     {
      "type": "stock",
-     "code": "035900",
-     "name": "JYP Ent.",
-     "rank": 3,
-     "score": 0.725,
+     "code": "086450",
+     "name": "동국제약",
+     "rank": 2,
+     "score": 0.743,
      "action": "BUY",
      "exp_week": null,
-     "shares": 4,
-     "amount": 189800.0,
-     "sector": "오디오물 출판 및 원판 녹음업",
-     "sector_rank": 1,
-     "close": 47450.0,
-     "ret_21": 0.1997,
-     "ret_63": 0.2058,
-     "mom_12_1": -0.4507,
-     "near_high": 0.6123,
-     "tv_ratio": 2.58,
+     "shares": 7,
+     "amount": 186200.0,
+     "sector": "의약품 제조업",
+     "sector_rank": 2,
+     "close": 26600.0,
+     "ret_21": 0.0924,
+     "ret_63": 0.4615,
+     "mom_12_1": 0.3986,
+     "near_high": 0.8896,
+     "tv_ratio": 1.16,
      "flow_f": null,
      "flow_i": null,
-     "per": 9.89,
-     "pbr": 2.56,
+     "per": 17.89,
+     "pbr": 1.81,
      "entry": null,
      "ret": null
     }
@@ -332,63 +332,63 @@
    ],
    "top10": [
     {
-     "code": "280360",
-     "name": "롯데웰푸드",
-     "score": 0.765,
-     "sector": "기타 식품 제조업"
-    },
-    {
      "code": "041510",
      "name": "에스엠",
-     "score": 0.749,
+     "score": 0.773,
      "sector": "오디오물 출판 및 원판 녹음업"
-    },
-    {
-     "code": "035900",
-     "name": "JYP Ent.",
-     "score": 0.725,
-     "sector": "오디오물 출판 및 원판 녹음업"
-    },
-    {
-     "code": "271560",
-     "name": "오리온",
-     "score": 0.694,
-     "sector": "기타 식품 제조업"
     },
     {
      "code": "086450",
      "name": "동국제약",
-     "score": 0.637,
+     "score": 0.743,
      "sector": "의약품 제조업"
+    },
+    {
+     "code": "035900",
+     "name": "JYP Ent.",
+     "score": 0.737,
+     "sector": "오디오물 출판 및 원판 녹음업"
+    },
+    {
+     "code": "280360",
+     "name": "롯데웰푸드",
+     "score": 0.631,
+     "sector": "기타 식품 제조업"
     },
     {
      "code": "028050",
      "name": "삼성E&A",
-     "score": 0.594,
+     "score": 0.625,
      "sector": "건축기술, 엔지니어링 및 관련 기술 서비스업"
-    },
-    {
-     "code": "053800",
-     "name": "안랩",
-     "score": 0.588,
-     "sector": "소프트웨어 개발 및 공급업"
-    },
-    {
-     "code": "097950",
-     "name": "CJ제일제당",
-     "score": 0.588,
-     "sector": "기타 식품 제조업"
     },
     {
      "code": "352820",
      "name": "하이브",
-     "score": 0.576,
+     "score": 0.588,
      "sector": "오디오물 출판 및 원판 녹음업"
     },
     {
      "code": "009420",
      "name": "한올바이오파마",
-     "score": 0.473,
+     "score": 0.575,
+     "sector": "의약품 제조업"
+    },
+    {
+     "code": "006280",
+     "name": "녹십자",
+     "score": 0.559,
+     "sector": "의약품 제조업"
+    },
+    {
+     "code": "271560",
+     "name": "오리온",
+     "score": 0.529,
+     "sector": "기타 식품 제조업"
+    },
+    {
+     "code": "003090",
+     "name": "대웅",
+     "score": 0.512,
      "sector": "의약품 제조업"
     }
    ],
@@ -396,54 +396,46 @@
     {
      "sector": "오디오물 출판 및 원판 녹음업",
      "rank": 1,
-     "ret_21": 0.0940766550522647,
+     "ret_21": 0.09523809523809534,
      "foreign_flow": null,
      "tilt": 0,
      "n": 3
     },
     {
-     "sector": "기타 식품 제조업",
-     "rank": 2,
-     "ret_21": 0.01818870504947573,
-     "foreign_flow": null,
-     "tilt": 0,
-     "n": 6
-    },
-    {
      "sector": "의약품 제조업",
-     "rank": 3,
+     "rank": 2,
      "ret_21": -0.02805888724553507,
      "foreign_flow": null,
      "tilt": 0,
      "n": 12
     },
     {
+     "sector": "기타 식품 제조업",
+     "rank": 3,
+     "ret_21": 0.01739316010118619,
+     "foreign_flow": null,
+     "tilt": 0,
+     "n": 6
+    },
+    {
      "sector": "건축기술, 엔지니어링 및 관련 기술 서비스업",
      "rank": 4,
-     "ret_21": -0.0068065469752686125,
+     "ret_21": -0.005562765880741227,
      "foreign_flow": null,
      "tilt": 0,
      "n": 4
     },
     {
-     "sector": "소프트웨어 개발 및 공급업",
-     "rank": 5,
-     "ret_21": 0.014418125643666402,
-     "foreign_flow": null,
-     "tilt": 0,
-     "n": 11
-    },
-    {
      "sector": "기초 의약물질 제조업",
-     "rank": 6,
-     "ret_21": -0.05921052631578949,
+     "rank": 5,
+     "ret_21": -0.0635964912280702,
      "foreign_flow": null,
      "tilt": 0,
      "n": 9
     },
     {
      "sector": "전기 통신업",
-     "rank": 7,
+     "rank": 6,
      "ret_21": 0.022911051212938016,
      "foreign_flow": null,
      "tilt": 0,
@@ -451,11 +443,19 @@
     },
     {
      "sector": "기타 금융업",
-     "rank": 8,
-     "ret_21": -0.045726004842771006,
+     "rank": 7,
+     "ret_21": -0.043474180748454605,
      "foreign_flow": null,
      "tilt": 0,
      "n": 30
+    },
+    {
+     "sector": "소프트웨어 개발 및 공급업",
+     "rank": 8,
+     "ret_21": -0.018226983689794696,
+     "foreign_flow": null,
+     "tilt": 0,
+     "n": 12
     },
     {
      "sector": "화학섬유 제조업",
@@ -468,7 +468,7 @@
     {
      "sector": "절연선 및 케이블 제조업",
      "rank": 10,
-     "ret_21": -0.09361489857000332,
+     "ret_21": -0.09280844695710011,
      "foreign_flow": null,
      "tilt": 0,
      "n": 4
@@ -493,11 +493,11 @@
    "llm_used": false,
    "equity": 999986.0,
    "round_trip": 0.0043,
-   "created_at": "2026-11-19 17:15",
+   "created_at": "2026-11-19 17:18",
    "entry_date": null,
    "avg": null,
    "kospi": null
   }
  ],
- "updated_at": "2026-11-19 17:15"
+ "updated_at": "2026-11-19 17:17"
 }
