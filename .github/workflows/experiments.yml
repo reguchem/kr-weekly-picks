@@ -43,7 +43,7 @@ jobs:
           EXP_SET: ${{ inputs.set }}
           KRX_ID: ${{ secrets.KRX_ID }}
           KRX_PW: ${{ secrets.KRX_PW }}
-        run: python -u -m src.experiments 2>&1 | tee experiments.log
+        run: set -o pipefail; python -u -m src.experiments 2>&1 | tee experiments.log
       - name: 결과 커밋
         if: always()
         run: |

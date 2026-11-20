@@ -323,6 +323,7 @@ def get_sectors() -> dict:
         return {c: names[i % len(names)] for i, c in enumerate(codes)}
     # 업종 분류 기준이 실행마다 바뀌면(세부 158개 ↔ KRX 대분류 29개) 테마 전략 결과가 크게 흔들림
     # → 세부 분류(FDR)를 우선, 실패하면 마지막으로 저장된 세부 분류 캐시를 쓰고, 그것도 없을 때만 다른 출처
+    from . import config as C
     cache = C.CACHE / "sectors.json"
     for fn in (_sectors_fdr, "cache", _sectors_naver, _sectors_krx):
         try:
