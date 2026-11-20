@@ -142,11 +142,19 @@ def run():
         ("BS", "현재 전략 종목만, ETF 없이", {"stock": ("theme_flow_slow", 3), "etf": 0, "ma": 120, "bear": True,
                                         "stop_daily": False}),
     ]
+    variants_ma = [
+        ("M60", "현재 전략: 60일선 이탈 시 교체", {"stock": ("theme_flow_slow", 3), **B}),
+        ("M45", "45일선 이탈 시 교체", {"stock": ("theme_flow_45", 3), **B}),
+        ("M30", "30일선 이탈 시 교체", {"stock": ("theme_flow_30", 3), **B}),
+        ("M20", "20일선 이탈 시 교체", {"stock": ("theme_flow", 3), **B}),
+        ("S60", "60일선, 종목만(ETF 없이)", {"stock": ("theme_flow_slow", 3), **{**B, "etf": 0}}),
+        ("S30", "30일선, 종목만(ETF 없이)", {"stock": ("theme_flow_30", 3), **{**B, "etf": 0}}),
+    ]
     exp_set = os.environ.get("EXP_SET", "")
-    variants = variants_bo if exp_set == "breakout" else variants_all
+    variants = {"breakout": variants_bo, "ma": variants_ma}.get(exp_set, variants_all)
     # 신호 자체의 예측력: 신호가 뜬 종목의 이후 수익률 vs 전체 평균 (다음 거래일 시가 매수 기준)
     event = {}
-    if exp_set == "breakout":
+    if exp_set == "breakout":  # 신호 분석은 breakout 묶음에서만
         op = px["open"]
         idx = close_s.index
         conds = {
@@ -240,7 +248,7 @@ def run():
            "curve": {"dates": [str(d.date()) for d in wk.index], "kospi": [round(float(x), 4) for x in b / b.iloc[0]],
                      **{k: [None if pd.isna(x) else round(float(x), 4) for x in wk[k]] for k in wk}}}
     C.DOCS_DATA.mkdir(parents=True, exist_ok=True)
-    fn = "experiments_breakout.json" if exp_set == "breakout" else "experiments.json"
+    fn = f"experiments_{exp_set}.json" if exp_set else "experiments.json"
     (C.DOCS_DATA / fn).write_text(json.dumps(out, ensure_ascii=False, indent=1))
 
 

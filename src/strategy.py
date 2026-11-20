@@ -21,6 +21,8 @@ class Factors:
         self.ret_63 = c / c.shift(63) - 1
         self.ma20 = c.rolling(20, min_periods=18).mean()
         self.ma60 = c.rolling(60, min_periods=55).mean()
+        self.ma30 = c.rolling(30, min_periods=27).mean()
+        self.ma45 = c.rolling(45, min_periods=41).mean()
         self.high_252 = c.rolling(252, min_periods=200).max()
         tv = c * volume.reindex_like(c)
         self.tv120 = tv.rolling(120, min_periods=100).mean()
@@ -58,7 +60,7 @@ class Factors:
             "tv20": self.tv20.loc[t],
             "hist": self.hist.loc[t],
             "ret_21": self.ret_21.loc[t], "ret_63": self.ret_63.loc[t],
-            "ma20": self.ma20.loc[t], "ma60": self.ma60.loc[t], "high_252": self.high_252.loc[t], "tv120": self.tv120.loc[t],
+            "ma20": self.ma20.loc[t], "ma60": self.ma60.loc[t], "ma30": self.ma30.loc[t], "ma45": self.ma45.loc[t], "high_252": self.high_252.loc[t], "tv120": self.tv120.loc[t],
             "flow_f": self.flow_f.loc[t] if self.flow_f is not None and t in self.flow_f.index else np.nan,
             "flow_i": self.flow_i.loc[t] if self.flow_i is not None and t in self.flow_i.index else np.nan,
             "tv_surge": self.tv_surge.loc[t], "hi20_prev": self.hi20_prev.loc[t],
@@ -207,6 +209,10 @@ STRATEGIES = {
                    8),
     "theme_flow_slow": (s_theme_flow_slow, "테마·수급 느린교체(60일선)",
                         "테마·수급과 같으나 60일선 이탈 시에만 탈락", 8),
+    "theme_flow_30": (lambda f, fu, ctx=None: s_theme_flow(f, fu, ctx, trend_ma="ma30"),
+                      "테마·수급 교체(30일선)", "30일선 이탈 시 탈락", 8),
+    "theme_flow_45": (lambda f, fu, ctx=None: s_theme_flow(f, fu, ctx, trend_ma="ma45"),
+                      "테마·수급 교체(45일선)", "45일선 이탈 시 탈락", 8),
     "breakout": (s_breakout, "급등초기(거래대금2배+20일 신고가)", "", 8),
     "breakout_flow": (lambda f, fu, ctx=None: s_breakout(f, fu, ctx, need_flow=True),
                       "급등초기+수급 3일 연속", "", 8),
