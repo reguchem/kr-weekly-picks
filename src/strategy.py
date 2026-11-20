@@ -216,6 +216,8 @@ STRATEGIES = {
                      "급등초기 + 수급 + 강한 업종",
                      "강한 업종(상위 7) 안에서 거래대금이 평소 2배로 늘고 20일 신고가를 돌파했으며 "
                      "외국인 또는 기관이 3일 연속 순매수한 종목만 신규 매수, 20일선 위에 있는 동안 보유", 8),
+    "breakout_all5": (lambda f, fu, ctx=None: s_breakout(f, fu, ctx, need_flow=True, theme=True, top=5),
+                      "급등초기 + 수급 + 강한 업종(상위 5)", "", 8),
     "breakout_all3": (lambda f, fu, ctx=None: s_breakout(f, fu, ctx, need_flow=True, theme=True, top=3),
                       "급등초기 + 수급 + 강한 업종(상위 3)", "", 8),
     "theme_breakout": (lambda f, fu, ctx=None: s_breakout(f, fu, ctx, base=True),

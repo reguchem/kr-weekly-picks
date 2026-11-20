@@ -41,4 +41,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/data/replay.json docs/data/replay.log
           git diff --cached --quiet || git commit -m "data: replay"
-          for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done
+          for i in 1 2 3; do git pull --rebase -X theirs && git push && break; sleep 5; done

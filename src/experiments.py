@@ -135,6 +135,7 @@ def run():
         ("X3", "급등초기 + 강한 업종(상위 3)", {"stock": ("breakout_theme", 3), **B}),
         ("X4", "급등초기 + 수급 + 강한 업종(상위 7)", {"stock": ("breakout_all", 3), **B}),
         ("X4a", "급등초기 + 수급 + 강한 업종(상위 3)", {"stock": ("breakout_all3", 3), **B}),
+        ("X4b", "급등초기 + 수급 + 강한 업종(상위 5)", {"stock": ("breakout_all5", 3), **B}),
         ("X5", "현재 전략 + 신규매수는 돌파 신호 때만", {"stock": ("theme_breakout", 3), **B}),
         ("XS", "급등초기(X1) 종목만, ETF 없이", {"stock": ("breakout", 3), "etf": 0, "ma": 120, "bear": True,
                                            "stop_daily": False}),
@@ -222,7 +223,7 @@ def run():
         print(f"{key} {label:28s} 평균CAGR {a['cagr']:+.1%} (요일범위 {results[key]['cagr_min']:+.1%}~"
               f"{results[key]['cagr_max']:+.1%}) 샤프 {a['sharpe']:.2f} MDD {a['mdd']:.1%} "
               f"검증CAGR {a['oos_cagr']:+.1%} 검증MDD {a['oos_mdd']:.1%} 매수/년 {a['buys_per_year']:.0f} "
-              f"전액현금주 {a['cash_weeks']:.0%} 손절/년 {a['stops_per_year']:.1f} 100만원→ {results[key]['tue_final_krw']:,.0f}원")
+              f"전액현금주 {a['cash_weeks']:.0%} 손절/년 {a['stops_per_year']:.1f} 시드→ {results[key]['tue_final_krw']:,.0f}원")
     print(f"[유니버스] {'+'.join(C.UNIVERSE_MARKETS)} 시가총액 상위 {len(codes)}종목")
     k0 = next(iter(results))
     print(f"[참고] KOSPI 평균CAGR {results[k0]['bench_cagr']:+.1%}, 2022년 이후 {results[k0]['oos_bench']:+.1%}")
