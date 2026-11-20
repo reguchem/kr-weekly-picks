@@ -11,6 +11,10 @@ on:
         description: "시가총액 상위 N. 비우면 기본값"
         type: string
         default: ""
+      set:
+        description: "실험 묶음 (비우면 기본, breakout = 급등초기 포착 비교)"
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -36,13 +40,14 @@ jobs:
           TZ: Asia/Seoul
           UNIVERSE_MARKETS: ${{ inputs.markets }}
           UNIVERSE_SIZE: ${{ inputs.size }}
+          EXP_SET: ${{ inputs.set }}
           KRX_ID: ${{ secrets.KRX_ID }}
           KRX_PW: ${{ secrets.KRX_PW }}
-        run: python -m src.experiments | tee experiments.log
+        run: python -u -m src.experiments 2>&1 | tee experiments.log
       - name: 결과 커밋
         if: always()
         run: |
-          mkdir -p docs/data && cp experiments.log docs/data/experiments.log || true
+          mkdir -p docs/data && cp experiments.log docs/data/experiments${{ inputs.set && format('_{0}', inputs.set) || '' }}.log || true
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/data data/cache

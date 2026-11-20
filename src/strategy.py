@@ -26,7 +26,15 @@ class Factors:
         self.tv120 = tv.rolling(120, min_periods=100).mean()
         # 외국인·기관 20일 순매수대금 / 20일 거래대금
         self.flow_f = self.flow_i = None
+        # 급등 초기 포착용: 최근 5일 거래대금 / 그 이전 20일 평균, 직전 20일 고가, 수급 연속 순매수
+        self.tv_surge = tv.rolling(5, min_periods=4).mean() / tv.rolling(20, min_periods=15).mean().shift(5)
+        self.hi20_prev = c.rolling(20, min_periods=18).max().shift(1)
+        self.flow_streak = None
         if flow is not None:
+            fr = flow["foreign"].reindex(index=c.index, columns=c.columns)
+            ir = flow["inst"].reindex(index=c.index, columns=c.columns)
+            self.flow_streak = (((fr > 0).astype(float).rolling(3).sum() >= 3)
+                                | ((ir > 0).astype(float).rolling(3).sum() >= 3)).astype(float).where(fr.notna() | ir.notna())
             tv20s = tv.rolling(20, min_periods=15).sum()
             for k, attr in (("foreign", "flow_f"), ("inst", "flow_i")):
                 fl = flow[k].reindex(index=c.index, columns=c.columns)
@@ -53,6 +61,8 @@ class Factors:
             "ma20": self.ma20.loc[t], "ma60": self.ma60.loc[t], "high_252": self.high_252.loc[t], "tv120": self.tv120.loc[t],
             "flow_f": self.flow_f.loc[t] if self.flow_f is not None and t in self.flow_f.index else np.nan,
             "flow_i": self.flow_i.loc[t] if self.flow_i is not None and t in self.flow_i.index else np.nan,
+            "tv_surge": self.tv_surge.loc[t], "hi20_prev": self.hi20_prev.loc[t],
+            "flow_streak": self.flow_streak.loc[t] if self.flow_streak is not None and t in self.flow_streak.index else np.nan,
         })
         f["sector"] = [self.sectors.get(c) for c in f.index]
         ok = (f["close"].notna() & (f["hist"] >= C.MIN_HISTORY_DAYS)
@@ -156,6 +166,40 @@ def s_theme_flow(f, fund, ctx=None, trend_ma="ma20"):
     return score
 
 
+def s_breakout(f, fund, ctx=None, need_flow=False, theme=False, base=False):
+    """급등 초기 포착: 신규 매수는 '거래대금 급증(5일 평균 ≥ 직전 20일 평균 2배) + 20일 신고가 돌파' 종목만.
+    need_flow: 외국인 또는 기관 3일 연속 순매수 추가 / theme: 업종 순위 상위 3개 안 / base: 현재 전략 점수 사용.
+    보유 종목은 20일선(현재 전략 기반이면 60일선) 위에 있는 동안 유지 후보."""
+    if base:
+        sc = s_theme_flow(f, fund, ctx, trend_ma="ma60")
+        if sc is None:
+            return None
+        g = f.loc[sc.index]
+    else:
+        g = f[(f["close"] > f["ma20"]) & (f["ret_21"] <= 0.60)].copy()
+        if g.empty:
+            return None
+        parts = [(0.35, _r(g["tv_surge"])), (0.25, _r(g["close"] / g["hi20_prev"]))]
+        if g["flow_f"].notna().sum() > len(g) * 0.5:
+            parts.append((0.2, _r(g["flow_f"].fillna(g["flow_f"].median()) + 0.5 * g["flow_i"].fillna(0))))
+        sec = sector_strength(f, ctx) if f["sector"].notna().sum() > len(f) * 0.5 else None
+        if sec is not None:
+            parts.append((0.2, _r(g["sector"].map(sec["score"])).fillna(0)))
+        sc = sum(w * x for w, x in parts) / sum(w for w, _ in parts)
+    brk = (g["tv_surge"] >= 2.0) & (g["close"] >= g["hi20_prev"])
+    if need_flow:
+        brk &= g["flow_streak"] == 1
+    if theme:
+        sec = sector_strength(f, ctx) if f["sector"].notna().sum() > len(f) * 0.5 else None
+        if sec is not None:
+            brk &= g["sector"].isin(set(sec.index[:TOP_SECTORS]))
+    if ctx is not None:
+        prev = ctx.get("new_ok")
+        ok = set(g.index[brk])
+        ctx["new_ok"] = (prev & ok) if (base and prev is not None) else ok
+    return sc
+
+
 # name: (함수, 한글이름, 설명, 버퍼순위)
 STRATEGIES = {
     "theme_flow": (s_theme_flow, "테마·수급(업종추세+주도주+외국인)",
@@ -163,6 +207,15 @@ STRATEGIES = {
                    8),
     "theme_flow_slow": (s_theme_flow_slow, "테마·수급 느린교체(60일선)",
                         "테마·수급과 같으나 60일선 이탈 시에만 탈락", 8),
+    "breakout": (s_breakout, "급등초기(거래대금2배+20일 신고가)", "", 8),
+    "breakout_flow": (lambda f, fu, ctx=None: s_breakout(f, fu, ctx, need_flow=True),
+                      "급등초기+수급 3일 연속", "", 8),
+    "breakout_theme": (lambda f, fu, ctx=None: s_breakout(f, fu, ctx, theme=True),
+                       "급등초기+강한 업종", "", 8),
+    "breakout_all": (lambda f, fu, ctx=None: s_breakout(f, fu, ctx, need_flow=True, theme=True),
+                     "급등초기+수급+강한 업종", "", 8),
+    "theme_breakout": (lambda f, fu, ctx=None: s_breakout(f, fu, ctx, base=True),
+                       "현재 전략 + 신규매수는 돌파 신호 있을 때만", "", 8),
     "composite": (s_composite, "복합(가치+저변동+모멘텀)",
                   "저PER·저PBR, 낮은 변동성, 12-1개월 모멘텀 순위의 평균", C.BUFFER_RANK),
     "lowvol_trend": (s_lowvol_trend, "저변동+추세",

@@ -116,7 +116,8 @@ def run():
             sched[d] = list(hold)
         return sched, bear_dates
 
-    variants = [
+    import os
+    variants_all = [
         ("H0", "종목3+ETF2, 시장필터 없음", {"stock": ("theme_flow_slow", 3), "etf": 2, "ma": 0}),
         ("H1", "종목3+ETF2, 하락장 전부 현금", {"stock": ("theme_flow_slow", 3), "etf": 2, "ma": 120}),
         ("B1", "종목3+ETF2, 하락장 엄격(주간 손절-7%)", {"stock": ("theme_flow_slow", 3), "etf": 2, "ma": 120,
@@ -126,6 +127,60 @@ def run():
         ("S3", "종목 3개, 하락장 전부 현금", {"stock": ("theme_flow_slow", 3), "etf": 0, "ma": 120}),
         ("E4", "테마 ETF 3개, 하락장 전부 현금", {"stock": None, "etf": 3, "ma": 120}),
     ]
+    B = {"etf": 2, "ma": 120, "bear": True, "stop_daily": False}
+    variants_bo = [
+        ("B1", "현재 전략 (테마·수급 느린교체, 하락장 엄격)", {"stock": ("theme_flow_slow", 3), **B}),
+        ("X1", "급등초기: 거래대금 2배 + 20일 신고가", {"stock": ("breakout", 3), **B}),
+        ("X2", "급등초기 + 외국인/기관 3일 연속 순매수", {"stock": ("breakout_flow", 3), **B}),
+        ("X3", "급등초기 + 강한 업종(상위 3)", {"stock": ("breakout_theme", 3), **B}),
+        ("X4", "급등초기 + 수급 + 강한 업종", {"stock": ("breakout_all", 3), **B}),
+        ("X5", "현재 전략 + 신규매수는 돌파 신호 때만", {"stock": ("theme_breakout", 3), **B}),
+        ("XS", "급등초기(X1) 종목만, ETF 없이", {"stock": ("breakout", 3), "etf": 0, "ma": 120, "bear": True,
+                                           "stop_daily": False}),
+        ("BS", "현재 전략 종목만, ETF 없이", {"stock": ("theme_flow_slow", 3), "etf": 0, "ma": 120, "bear": True,
+                                        "stop_daily": False}),
+    ]
+    exp_set = os.environ.get("EXP_SET", "")
+    variants = variants_bo if exp_set == "breakout" else variants_all
+    # 신호 자체의 예측력: 신호가 뜬 종목의 이후 수익률 vs 전체 평균 (다음 거래일 시가 매수 기준)
+    event = {}
+    if exp_set == "breakout":
+        op = px["open"]
+        idx = close_s.index
+        conds = {
+            "거래대금 2배": lambda f: f["tv_surge"] >= 2,
+            "20일 신고가": lambda f: f["close"] >= f["hi20_prev"],
+            "거래대금 2배 + 20일 신고가": lambda f: (f["tv_surge"] >= 2) & (f["close"] >= f["hi20_prev"]),
+            "+ 수급 3일 연속": lambda f: (f["tv_surge"] >= 2) & (f["close"] >= f["hi20_prev"]) & (f["flow_streak"] == 1),
+            "지난주 +15% 이상 급등": lambda f: (f["close"] / F.close.shift(5).loc[f.name] .reindex(f.index) - 1) >= 0.15,
+        }
+        rows = {k: {h: [] for h in (5, 20, 60)} for k in conds}
+        base = {h: [] for h in (5, 20, 60)}
+        for d in [d for d in signal_dates(idx) if d >= t0]:
+            i = idx.get_loc(d)
+            if i + 61 >= len(idx):
+                break
+            f = fcache.get(d)
+            if f is None:
+                f = fcache[d] = F.at(d)
+            f.name = d
+            entry = op.iloc[i + 1].reindex(f.index)
+            for h in (5, 20, 60):
+                fwd = close_s.iloc[i + h].reindex(f.index) / entry - 1
+                base[h].append(fwd.mean())
+                for k, fn in conds.items():
+                    m = fn(f).fillna(False)
+                    if m.any():
+                        rows[k][h] += list((fwd[m] - fwd.mean()).dropna())
+        for k in conds:
+            event[k] = {"n": len(rows[k][5])}
+            for h in (5, 20, 60):
+                x = np.array(rows[k][h])
+                event[k][f"ex{h}"] = float(np.mean(x)) if len(x) else None
+                event[k][f"win{h}"] = float(np.mean(x > 0)) if len(x) else None
+            print(f"[신호] {k:22s} 건수 {event[k]['n']:6d} · 초과수익 1주 {event[k]['ex5'] or 0:+.2%} "
+                  f"(이긴 비율 {event[k]['win5'] or 0:.0%}) · 1개월 {event[k]['ex20'] or 0:+.2%} "
+                  f"({event[k]['win20'] or 0:.0%}) · 3개월 {event[k]['ex60'] or 0:+.2%} ({event[k]['win60'] or 0:.0%})")
     oc = pd.concat([close_s, close_e], axis=1)
     oo = pd.concat([px["open"], epx["open"]], axis=1)
     etf_set = set(close_e.columns)
@@ -168,7 +223,8 @@ def run():
               f"검증CAGR {a['oos_cagr']:+.1%} 검증MDD {a['oos_mdd']:.1%} 매수/년 {a['buys_per_year']:.0f} "
               f"전액현금주 {a['cash_weeks']:.0%} 손절/년 {a['stops_per_year']:.1f} 100만원→ {results[key]['tue_final_krw']:,.0f}원")
     print(f"[유니버스] {'+'.join(C.UNIVERSE_MARKETS)} 시가총액 상위 {len(codes)}종목")
-    print(f"[참고] KOSPI 평균CAGR {results['H1']['bench_cagr']:+.1%}, 2022년 이후 {results['H1']['oos_bench']:+.1%}")
+    k0 = next(iter(results))
+    print(f"[참고] KOSPI 평균CAGR {results[k0]['bench_cagr']:+.1%}, 2022년 이후 {results[k0]['oos_bench']:+.1%}")
     print("[최근 화요일 선정]", now_picks)
 
     start = max(s.index[0] for s in tue_curves.values())
@@ -178,11 +234,12 @@ def run():
     b = kospi.reindex(wk.index, method="ffill")
     out = {"generated_at": datetime.now(KST).strftime("%Y-%m-%d %H:%M"),
            "etf_universe": [{"code": c, "name": n} for c, n in zip(etfs["code"], etfs["name"])],
-           "has_flow": flow is not None, "fund_dates": len(fund), "results": results, "now_picks": now_picks,
+           "has_flow": flow is not None, "fund_dates": len(fund), "results": results, "event": event, "now_picks": now_picks,
            "curve": {"dates": [str(d.date()) for d in wk.index], "kospi": [round(float(x), 4) for x in b / b.iloc[0]],
                      **{k: [None if pd.isna(x) else round(float(x), 4) for x in wk[k]] for k in wk}}}
     C.DOCS_DATA.mkdir(parents=True, exist_ok=True)
-    (C.DOCS_DATA / "experiments.json").write_text(json.dumps(out, ensure_ascii=False, indent=1))
+    fn = "experiments_breakout.json" if exp_set == "breakout" else "experiments.json"
+    (C.DOCS_DATA / fn).write_text(json.dumps(out, ensure_ascii=False, indent=1))
 
 
 if __name__ == "__main__":
