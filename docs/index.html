@@ -403,7 +403,7 @@ function renderCards(recs){
     const third = etf ? ['3개월', pct(p.ret_63)] : ['예상 수익', p.exp_week==null?'–':pct(p.exp_week,2)];
     const more = etf
       ? `<dl class="kv"><dt>1개월</dt><dd>${pct(p.ret_21)}</dd><dt>6개월 고가 대비</dt><dd>${p.near_high==null?'–':(p.near_high*100).toFixed(0)+'%'}</dd><dt>매도 거래세</dt><dd>없음</dd>${p.ret?.now!=null?`<dt>추천 후</dt><dd>${pct(p.ret.now)}</dd>`:''}</dl>`
-      : `<dl class="kv"><dt>1개월 / 3개월</dt><dd>${pct(p.ret_21)} / ${pct(p.ret_63)}</dd><dt>52주 고가 대비</dt><dd>${p.near_high==null?'–':(p.near_high*100).toFixed(0)+'%'}</dd><dt>거래대금 증가</dt><dd>${p.tv_ratio==null?'–':p.tv_ratio.toFixed(2)+'배'}</dd><dt>외국인 20일</dt><dd>${pct(p.flow_f)}</dd><dt>기관 20일</dt><dd>${pct(p.flow_i)}</dd><dt>PER / PBR</dt><dd>${f2(p.per)} / ${f2(p.pbr)}</dd>${p.ret?.now!=null?`<dt>추천 후</dt><dd>${pct(p.ret.now)}</dd>`:''}</dl>`;
+      : `<dl class="kv"><dt>1개월 / 3개월</dt><dd>${pct(p.ret_21)} / ${pct(p.ret_63)}</dd><dt>52주 고가 대비</dt><dd>${p.near_high==null?'–':(p.near_high*100).toFixed(0)+'%'}</dd><dt>거래대금 증가</dt><dd>${p.tv_surge!=null?p.tv_surge.toFixed(1)+'배 (최근 5일/직전 20일)':(p.tv_ratio==null?'–':p.tv_ratio.toFixed(2)+'배')}</dd>${p.breakout!=null?`<dt>20일 신고가</dt><dd>${p.breakout?'돌파':'아님'}</dd>`:''}${p.flow_streak!=null?`<dt>수급 3일 연속</dt><dd>${p.flow_streak?'예':'아니오'}</dd>`:''}<dt>외국인 20일</dt><dd>${pct(p.flow_f)}</dd><dt>기관 20일</dt><dd>${pct(p.flow_i)}</dd><dt>PER / PBR</dt><dd>${f2(p.per)} / ${f2(p.pbr)}</dd>${p.ret?.now!=null?`<dt>추천 후</dt><dd>${pct(p.ret.now)}</dd>`:''}</dl>`;
     return `<div class="card">
       <div class="badges"><span class="badge ${p.action}">${ACT[p.action]}</span><span class="badge">${etf?'테마 ETF':'종목'}</span></div>
       <div class="nm">${p.name}</div><div class="cd">${p.code}</div>

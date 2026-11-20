@@ -64,7 +64,7 @@ SELL_COST = FEE + SELL_TAX + SLIPPAGE
 # ── 백테스트 ────────────────────────────────────────────
 BACKTEST_START = "2015-01-01"
 IN_SAMPLE_END = "2021-12-31"  # 전략 선택은 이 날짜까지의 성과로만, 이후는 검증 구간
-DEFAULT_STRATEGY = "theme_flow_slow"   # 테마·수급(느린 교체) 전략
+DEFAULT_STRATEGY = "breakout_all"   # X4: 급등 초기(거래대금 2배+20일 신고가) + 수급 3일 연속 + 강한 업종 (2026-11-20 변경, 이전: theme_flow_slow)
 STRATEGY_MODE = "fixed"           # "fixed": 위 전략 고정 / "auto": 백테스트 인샘플 1위 자동 선택
 TRADE_WEEKDAY = 0             # (호환용) 첫 신호 요일
 # 추천 일정: ① 화요일 08:00 (월요일 종가 기준) ② 목요일 16:00 (목요일 종가 기준)
