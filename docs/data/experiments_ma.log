@@ -1,0 +1,75 @@
+[sector] _sectors_fdr: 0 종목, 0 업종
+[sector] 캐시 사용: 2769 종목, 158 업종
+[universe] _universe_naver_api: KOSPI+KOSDAQ 상위 300 / 수집 946 종목
+[prices] 300/300 종목, 3000 거래일
+[etf] 업종·테마 ETF 80개
+[prices] 80/80 종목, 3000 거래일
+KRX 로그인 시도...
+  로그인 ID: minchaa
+KRX 로그인 완료.
+  로그인 시간: 2026-11-20 15:21:07
+  만료 시간: 2026-11-20 16:21:07
+[krx] 계정 설정 있음 · 수급 조회 성공 · PER/PBR 조회 성공
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+Error occurred in get_market_trading_value_and_volume_on_ticker_by_date: Length mismatch: Expected axis has 0 elements, new values have 6 elements
+[flow] 50/300 처리, 성공 0
+[flow] 100/300 처리, 성공 0
+[flow] 150/300 처리, 성공 0
+[flow] 200/300 처리, 성공 0
+[flow] 250/300 처리, 성공 0
+[flow] 300/300 처리, 성공 0
+[flow] 수급 데이터 없음 (마지막 오류: None)
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/src/experiments.py:38: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+  fund_dates = [d for d in weekly_signal_dates(px["close"].index) if d >= t0 - pd.Timedelta(days=10)]
+[data] 수급 있음 588종목, PER/PBR 623개 날짜
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/src/strategy.py:440: FutureWarning: The default fill_method='pad' in Series.pct_change is deprecated and will be removed in a future version. Either fill in any non-leading NA values prior to calling pct_change or specify 'fill_method=None' to not fill NA values.
+  wk = eq.resample("W-FRI").last().pct_change().dropna()
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/src/strategy.py:441: FutureWarning: The default fill_method='pad' in Series.pct_change is deprecated and will be removed in a future version. Either fill in any non-leading NA values prior to calling pct_change or specify 'fill_method=None' to not fill NA values.
+  bwk = b.resample("W-FRI").last().pct_change().dropna().reindex(wk.index)
+M60 현재 전략: 60일선 이탈 시 교체          평균CAGR +16.0% (요일범위 +16.0%~+16.0%) 샤프 0.71 MDD -48.3% 검증CAGR +15.0% 검증MDD -48.3% 매수/년 103 전액현금주 3% 손절/년 3.9 시드→ 11,679,334원
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/src/strategy.py:440: FutureWarning: The default fill_method='pad' in Series.pct_change is deprecated and will be removed in a future version. Either fill in any non-leading NA values prior to calling pct_change or specify 'fill_method=None' to not fill NA values.
+  wk = eq.resample("W-FRI").last().pct_change().dropna()
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/src/strategy.py:441: FutureWarning: The default fill_method='pad' in Series.pct_change is deprecated and will be removed in a future version. Either fill in any non-leading NA values prior to calling pct_change or specify 'fill_method=None' to not fill NA values.
+  bwk = b.resample("W-FRI").last().pct_change().dropna().reindex(wk.index)
+M45 45일선 이탈 시 교체                 평균CAGR +17.6% (요일범위 +17.6%~+17.6%) 샤프 0.76 MDD -49.2% 검증CAGR +18.5% 검증MDD -49.2% 매수/년 104 전액현금주 3% 손절/년 3.6 시드→ 13,709,891원
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/src/strategy.py:440: FutureWarning: The default fill_method='pad' in Series.pct_change is deprecated and will be removed in a future version. Either fill in any non-leading NA values prior to calling pct_change or specify 'fill_method=None' to not fill NA values.
+  wk = eq.resample("W-FRI").last().pct_change().dropna()
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/src/strategy.py:441: FutureWarning: The default fill_method='pad' in Series.pct_change is deprecated and will be removed in a future version. Either fill in any non-leading NA values prior to calling pct_change or specify 'fill_method=None' to not fill NA values.
+  bwk = b.resample("W-FRI").last().pct_change().dropna().reindex(wk.index)
+M30 30일선 이탈 시 교체                 평균CAGR +15.7% (요일범위 +15.7%~+15.7%) 샤프 0.70 MDD -46.7% 검증CAGR +22.1% 검증MDD -46.7% 매수/년 107 전액현금주 3% 손절/년 3.7 시드→ 11,276,807원
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/src/strategy.py:440: FutureWarning: The default fill_method='pad' in Series.pct_change is deprecated and will be removed in a future version. Either fill in any non-leading NA values prior to calling pct_change or specify 'fill_method=None' to not fill NA values.
+  wk = eq.resample("W-FRI").last().pct_change().dropna()
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/src/strategy.py:441: FutureWarning: The default fill_method='pad' in Series.pct_change is deprecated and will be removed in a future version. Either fill in any non-leading NA values prior to calling pct_change or specify 'fill_method=None' to not fill NA values.
+  bwk = b.resample("W-FRI").last().pct_change().dropna().reindex(wk.index)
+M20 20일선 이탈 시 교체                 평균CAGR +8.4% (요일범위 +8.4%~+8.4%) 샤프 0.45 MDD -44.9% 검증CAGR +14.3% 검증MDD -44.9% 매수/년 115 전액현금주 3% 손절/년 3.8 시드→ 5,227,872원
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/src/strategy.py:440: FutureWarning: The default fill_method='pad' in Series.pct_change is deprecated and will be removed in a future version. Either fill in any non-leading NA values prior to calling pct_change or specify 'fill_method=None' to not fill NA values.
+  wk = eq.resample("W-FRI").last().pct_change().dropna()
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/src/strategy.py:441: FutureWarning: The default fill_method='pad' in Series.pct_change is deprecated and will be removed in a future version. Either fill in any non-leading NA values prior to calling pct_change or specify 'fill_method=None' to not fill NA values.
+  bwk = b.resample("W-FRI").last().pct_change().dropna().reindex(wk.index)
+S60 60일선, 종목만(ETF 없이)            평균CAGR +19.1% (요일범위 +19.1%~+19.1%) 샤프 0.70 MDD -53.9% 검증CAGR +12.0% 검증MDD -49.2% 매수/년 71 전액현금주 0% 손절/년 3.5 시드→ 14,101,127원
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/src/strategy.py:440: FutureWarning: The default fill_method='pad' in Series.pct_change is deprecated and will be removed in a future version. Either fill in any non-leading NA values prior to calling pct_change or specify 'fill_method=None' to not fill NA values.
+  wk = eq.resample("W-FRI").last().pct_change().dropna()
+/home/runner/work/kr-weekly-picks/kr-weekly-picks/src/strategy.py:441: FutureWarning: The default fill_method='pad' in Series.pct_change is deprecated and will be removed in a future version. Either fill in any non-leading NA values prior to calling pct_change or specify 'fill_method=None' to not fill NA values.
+  bwk = b.resample("W-FRI").last().pct_change().dropna().reindex(wk.index)
+S30 30일선, 종목만(ETF 없이)            평균CAGR +14.4% (요일범위 +14.4%~+14.4%) 샤프 0.58 MDD -55.5% 검증CAGR +13.9% 검증MDD -44.4% 매수/년 75 전액현금주 0% 손절/년 3.3 시드→ 8,997,152원
+[유니버스] KOSPI+KOSDAQ 시가총액 상위 300종목
+[참고] KOSPI 평균CAGR +8.3%, 2022년 이후 +10.5%
+[최근 화요일 선정] {'M60': ['022100', '122870'], 'M45': ['035900', '122870'], 'M30': ['035900', '122870'], 'M20': ['122870', '035900'], 'S60': ['022100', '122870'], 'S30': ['035900', '122870']}
