@@ -273,7 +273,7 @@ footer ul{margin:0 0 16px;padding-left:18px}
 
 <section>
   <details class="fold" id="perf-fold">
-    <summary><div><h2>추천대로 했다면 (모의)</h2><span class="aside">시드 100만원 · 추천 다음날 시가로 매매했다고 가정</span></div></summary>
+    <summary><div><h2>추천대로 했다면 (모의)</h2><span class="aside"><span class="seed-txt">시드 200만원</span> · 추천 다음날 시가로 매매했다고 가정</span></div></summary>
     <div class="body" id="perf"></div>
   </details>
 </section>
@@ -322,6 +322,7 @@ const won = x => x==null ? '–' : Math.round(x).toLocaleString('ko-KR') + '원'
 const manwon = x => x==null ? '–' : (Math.round(x/1000)/10).toLocaleString('ko-KR') + '만원';
 const f2 = x => x==null ? '–' : Number(x).toFixed(2);
 async function load(p){ try{ const r = await fetch(p+'?t='+Date.now()); return r.ok ? r.json() : null; }catch(e){ return null; } }
+const SEED = 2000000, SEED_TXT = '200만원';
 const DOW = ['일','월','화','수','목','금','토'];
 const mdw = s => { if(!s) return ''; const d = new Date(s+'T00:00:00'); return `${d.getMonth()+1}/${d.getDate()}(${DOW[d.getDay()]})`; };
 function nextSlot(fromStr){
@@ -481,7 +482,7 @@ async function saveTrades(next, msg){
   TRADES_SHA = (await r.json()).content.sha; TRADES = next;
 }
 function computePositions(trades){
-  const pos = {}; let realized = 0, cash = 1000000; const closed = [];
+  const pos = {}; let realized = 0, cash = SEED; const closed = [];
   [...trades].sort((a,b)=> (a.date+a.ts).localeCompare(b.date+b.ts)).forEach(t => {
     const sh = +t.shares, px = +t.price, etf = t.type==='etf';
     if(t.side==='BUY'){ const cost = sh*px*(1+FEE); cash -= cost;
@@ -616,7 +617,7 @@ function renderMine(flash){
       <tbody>${[...closed].reverse().slice(0,10).map(c=>`<tr><td class="l"><b>${c.name}</b> <span class="mut" style="font-size:12px">${md(c.date)} 매도</span></td><td class="mob2" data-k="수량">${c.shares}주</td><td class="mob2 rt">${num(c.buy)} → ${num(c.sell)}</td><td class="rt mobr">${pct(c.pct)} <span class="num ${c.pl>0?'up':c.pl<0?'down':''}">${sign(c.pl)}${num(c.pl)}원</span></td></tr>`).join('')}</tbody></table>` : '';
   $('#mine-aside').textContent = `보유 ${rows.length}/${MAX_HOLD}종목 · ${PORT?.asof?md(PORT.asof)+' 종가 기준':'최근 가격 기준'}`;
   el.innerHTML = flashHtml + connect + `<div class="kpis">
-      ${k('총 수익 (실현+평가)', `<span class="${allPL>0?'up':allPL<0?'down':''}">${sign(allPL)}${num(allPL)}원</span>`, `시드 100만원 대비 ${pctP(allPL/1e6)}`)}
+      ${k('총 수익 (실현+평가)', `<span class="${allPL>0?'up':allPL<0?'down':''}">${sign(allPL)}${num(allPL)}원</span>`, `시드 ${SEED_TXT} 대비 ${pctP(allPL/SEED)}`)}
       ${k('실현 손익 (매도 완료)', `<span class="${realized>0?'up':realized<0?'down':''}">${sign(realized)}${num(realized)}원</span>`, `매도 ${closed.length}건`)}
       ${k('평가 손익 (보유 중)', `<span class="${evalPL>0?'up':evalPL<0?'down':''}">${sign(evalPL)}${num(evalPL)}원</span>`, `보유 평가 ${won(stockVal)}`)}
       ${k('총자산', won(total), `현금 ${won(cash)}`)}
@@ -779,7 +780,7 @@ function renderHist(recs){
 function renderBT(bt){
   const el = $('#bt');
   if(!bt){ el.innerHTML = `<div class="empty">백테스트 결과가 없습니다.</div>`; return; }
-  $('#bt-aside').textContent = `${bt.period[0].slice(0,4)}~${bt.period[1].slice(0,4)} · 시드 100만원 · 주 2회(월·목 종가 신호, 다음날 시가 매매)`;
+  $('#bt-aside').textContent = `${bt.period[0].slice(0,4)}~${bt.period[1].slice(0,4)} · 시드 ${SEED_TXT} · 주 2회(월·목 종가 신호, 다음날 시가 매매)`;
   const names = Object.keys(bt.strategies);
   const tabs = [['full','전체 기간'],['out_sample',`검증 구간(${+bt.in_sample_end.slice(0,4)+1}~)`]];
   el.innerHTML = `<div class="tabs" id="bt-tabs">${tabs.map(([k,l],i)=>`<button data-k="${k}" class="${i===0?'on':''}">${l}</button>`).join('')}</div>
@@ -787,7 +788,7 @@ function renderBT(bt){
     <div class="chart" style="margin-top:20px;height:320px"><canvas id="c-bt"></canvas></div>
     <div class="note">${bt.universe} · ★ 현재 사용 전략 · 범례를 눌러 곡선 켜고 끄기 · 로그 스케일 · 가치 ${bt.has_value_factor?'포함':'제외'} · 수급 ${bt.has_flow?'포함':'제외'} · 개별 종목 전략만 비교(ETF·하락장 모드 비교는 별도 실험)</div>`;
   const draw = key => {
-    $('#bt-table').innerHTML = `<table><thead><tr><th class="l">전략</th><th>연수익률</th><th>KOSPI 대비</th><th>최대낙폭</th><th>매수/년</th>${key==='full'?'<th>100만원→</th>':''}</tr></thead><tbody>${names.map(n=>{const s=bt.strategies[n], m=s[key]||{};
+    $('#bt-table').innerHTML = `<table><thead><tr><th class="l">전략</th><th>연수익률</th><th>KOSPI 대비</th><th>최대낙폭</th><th>매수/년</th>${key==='full'?`<th>${SEED_TXT}→</th>`:''}</tr></thead><tbody>${names.map(n=>{const s=bt.strategies[n], m=s[key]||{};
       return `<tr class="${n===bt.selected?'sel':''}"><td class="l">${n===bt.selected?'★ ':''}${s.label}</td><td>${pct(m.cagr)}</td><td>${pct(m.excess_cagr)}</td><td>${pct(m.mdd)}</td><td>${s.buys_per_year}</td>${key==='full'?`<td>${manwon(s.final_krw)}</td>`:''}</tr>`;}).join('')}</tbody></table>`;
   };
   draw('full');
