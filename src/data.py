@@ -321,11 +321,24 @@ def get_sectors() -> dict:
         names = ["반도체", "2차전지", "조선", "방산", "바이오", "은행", "자동차", "화학", "인터넷", "건설",
                  "철강", "유통", "게임", "전력기기", "화장품"]
         return {c: names[i % len(names)] for i, c in enumerate(codes)}
-    for fn in (_sectors_fdr, _sectors_naver, _sectors_krx):
+    # 업종 분류 기준이 실행마다 바뀌면(세부 158개 ↔ KRX 대분류 29개) 테마 전략 결과가 크게 흔들림
+    # → 세부 분류(FDR)를 우선, 실패하면 마지막으로 저장된 세부 분류 캐시를 쓰고, 그것도 없을 때만 다른 출처
+    cache = C.CACHE / "sectors.json"
+    for fn in (_sectors_fdr, "cache", _sectors_naver, _sectors_krx):
         try:
+            if fn == "cache":
+                if cache.exists():
+                    m = json.loads(cache.read_text())
+                    print(f"[sector] 캐시 사용: {len(m)} 종목, {len(set(m.values()))} 업종")
+                    if len(m) > 500 and len(set(m.values())) >= 80:
+                        return m
+                continue
             m = fn()
             print(f"[sector] {fn.__name__}: {len(m)} 종목, {len(set(m.values()))} 업종")
             if len(m) > 500:
+                if fn is _sectors_fdr:
+                    C.CACHE.mkdir(parents=True, exist_ok=True)
+                    cache.write_text(json.dumps(m, ensure_ascii=False))
                 return m
         except Exception as e:  # noqa
             print(f"[sector] {fn.__name__} 실패: {e!r}")

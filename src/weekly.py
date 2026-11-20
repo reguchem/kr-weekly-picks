@@ -61,7 +61,7 @@ def load_sectors(refresh: bool) -> dict:
         if m:
             return m
     m = get_sectors()
-    if m:
+    if m and len(set(m.values())) >= 80:          # 세부 분류일 때만 캐시 갱신
         SECTOR_CACHE.write_text(json.dumps(m, ensure_ascii=False))
         return m
     return json.loads(SECTOR_CACHE.read_text()) if SECTOR_CACHE.exists() else {}
