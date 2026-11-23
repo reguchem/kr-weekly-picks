@@ -1,5 +1,5 @@
 {
- "date": "2026-11-19",
+ "date": "2026-11-23",
  "items": [
   {
    "code": "020560",
@@ -8,17 +8,17 @@
    "sector": "항공 여객 운송업",
    "buy_date": "2026-11-19",
    "buy": 8721.0,
-   "last": 8750.0,
-   "ret": 0.0033,
-   "dd": 0.0,
+   "last": 8220.0,
+   "ret": -0.0575,
+   "dd": -0.0648,
    "signals": [],
    "news": null,
    "level": "정상"
   }
  ],
  "market_ok": false,
- "kospi": 5137.89,
- "kospi_ma": 6845.54,
+ "kospi": 4708.54,
+ "kospi_ma": 6788.58,
  "market_ma": 120,
  "news_checked": false,
  "history": []

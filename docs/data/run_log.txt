@@ -1,3 +1,32 @@
-[00:48:14] 오늘은 휴장 — 성과만 갱신 (마지막 거래일 2026-11-20)
-[00:48:15] [prices] 4/4 종목, 93 거래일
-[00:48:15] [성과] 누적 -0.0066, KOSPI -0.0521, 기준일 2026-11-20
+[03:47:45] [sector] _sectors_fdr: 2769 종목, 158 업종
+[03:47:51] [universe] _universe_naver_api: KOSPI+KOSDAQ 상위 300 / 수집 946 종목
+[03:48:02] [prices] 300/300 종목, 300 거래일
+[03:48:03] [etf] 업종·테마 ETF 80개
+[03:48:06] [prices] 80/80 종목, 300 거래일
+[03:48:06] /home/runner/work/kr-weekly-picks/kr-weekly-picks/src/weekly.py:124: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+[03:48:06]   start = str((last_day - pd.Timedelta(days=60)).date())
+[03:48:09] [flow] 50/300 처리, 성공 50
+[03:48:12] [flow] 100/300 처리, 성공 100
+[03:48:15] [flow] 150/300 처리, 성공 150
+[03:48:17] [flow] 200/300 처리, 성공 200
+[03:48:20] [flow] 250/300 처리, 성공 250
+[03:48:23] [flow] 300/300 처리, 성공 300
+[03:48:23] [flow] 300/300 종목
+[03:48:23] [내 보유] 1종목, 평가 1,994,486원 (-0.28%), 실현 0원
+[03:48:23] /home/runner/work/kr-weekly-picks/kr-weekly-picks/src/weekly.py:538: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+[03:48:23]   nxt = pd.bdate_range(last_day + pd.Timedelta(days=1), periods=1)[0]
+[03:48:24] KRX 로그인 시도...
+[03:48:24]   로그인 ID: minchaa
+[03:48:26] KRX 로그인 완료.
+[03:48:26]   로그인 시간: 2026-11-24 03:48:26
+[03:48:26]   만료 시간: 2026-11-24 04:48:26
+[03:48:29] [llm] ANTHROPIC_API_KEY 없음 → 건너뜀
+[03:48:29] [추천] 2026-11-23 시장필터 현금: 와이지엔터테인먼트(BUY), JYP Ent.(BUY) / 매도: 아시아나항공
+[03:48:29] [llm] ANTHROPIC_API_KEY 없음 → 건너뜀
+[03:48:29] [점검] 아시아나항공: 정상 []
+[03:48:32] [market] 뉴스 한국경제 실패: HTTPError('403 Client Error: Forbidden for url: https://www.hankyung.com/feed/finance')
+[03:48:32] [market] 뉴스 한국경제 실패: HTTPError('403 Client Error: Forbidden for url: https://www.hankyung.com/feed/economy')
+[03:48:41] [market] 키워드 상위: [('AI', 19), ('반도체', 9), ('증안펀드', 8), ('수출', 7), ('지원', 7)] · 종목 언급: [('삼성증권', 4), ('SK하이닉스', 3), ('카카오', 3), ('현대차', 2), ('KB금융', 2)] · 추천: None
+[03:48:41] [market] 지표 9개, 수급 있음, 뉴스 10건 · 외국인 2주 순매수 -3.8조(7일 연속 순매도) · 기관 -9,762억 · KOSPI 2주 -6.2% · 원/달러 1,335원(-2.0%) · 美 반도체지수 -5.1% · 美 10년물 4.94%(+0.08%p) · VIX 26.3 (불안 높음)
+[03:48:41] [prices] 6/6 종목, 94 거래일
+[03:48:42] [성과] 누적 -0.047, KOSPI -0.0836, 기준일 2026-11-23

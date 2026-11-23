@@ -42,7 +42,7 @@
       "1w": null,
       "1m": null,
       "3m": null,
-      "now": 0.0104
+      "now": -0.0508
      }
     },
     {
@@ -72,7 +72,7 @@
       "1w": null,
       "1m": null,
       "3m": null,
-      "now": 0.0173
+      "now": -0.0455
      }
     }
    ],
@@ -246,13 +246,13 @@
     "1w": null,
     "1m": null,
     "3m": null,
-    "now": 0.0138
+    "now": -0.0481
    },
    "kospi": {
     "1w": null,
     "1m": null,
     "3m": null,
-    "now": 0.0094
+    "now": -0.075
    }
   },
   {
@@ -292,8 +292,13 @@
      "flow_i": 0.0635,
      "per": 64.58,
      "pbr": 5.9,
-     "entry": null,
-     "ret": null
+     "entry": 21300.0,
+     "ret": {
+      "1w": null,
+      "1m": null,
+      "3m": null,
+      "now": -0.0685
+     }
     },
     {
      "type": "stock",
@@ -317,8 +322,13 @@
      "flow_i": 0.0375,
      "per": 62.66,
      "pbr": 1.35,
-     "entry": null,
-     "ret": null
+     "entry": 62000.0,
+     "ret": {
+      "1w": null,
+      "1m": null,
+      "3m": null,
+      "now": -0.1935
+     }
     }
    ],
    "sells": [
@@ -494,10 +504,245 @@
    "equity": 1000316.0,
    "round_trip": 0.0043,
    "created_at": "2026-11-19 17:27",
+   "entry_date": "2026-11-20",
+   "avg": {
+    "1w": null,
+    "1m": null,
+    "3m": null,
+    "now": -0.131
+   },
+   "kospi": {
+    "1w": null,
+    "1m": null,
+    "3m": null,
+    "now": -0.0446
+   }
+  },
+  {
+   "week": "2026-W48-tue",
+   "slot": "tue",
+   "signal_date": "2026-11-23",
+   "trade_date": "2026-11-24",
+   "strategy": "theme_flow_slow",
+   "strategy_label": "테마·수급 느린교체(60일선) + 테마 ETF 2개",
+   "mode": "bear",
+   "stopped": [],
+   "kospi_r63": -0.3129,
+   "market_ok": false,
+   "kospi_level": 4708.54,
+   "kospi_ma": 6788.58,
+   "market_ma": 120,
+   "picks": [
+    {
+     "type": "stock",
+     "code": "122870",
+     "name": "와이지엔터테인먼트",
+     "rank": 2,
+     "score": 0.613,
+     "action": "BUY",
+     "exp_week": 0.0017,
+     "shares": 8,
+     "amount": 368800.0,
+     "sector": "오디오물 출판 및 원판 녹음업",
+     "sector_rank": 2,
+     "close": 46100.0,
+     "ret_21": 0.1383,
+     "ret_63": 0.1439,
+     "mom_12_1": -0.3632,
+     "near_high": 0.6026,
+     "tv_ratio": 1.49,
+     "tv_surge": 4.13,
+     "breakout": false,
+     "flow_streak": false,
+     "flow_f": 0.0398,
+     "flow_i": 0.0153,
+     "per": 23.49,
+     "pbr": 1.69,
+     "entry": null,
+     "ret": null
+    },
+    {
+     "type": "stock",
+     "code": "035900",
+     "name": "JYP Ent.",
+     "rank": 3,
+     "score": 0.604,
+     "action": "BUY",
+     "exp_week": 0.0017,
+     "shares": 8,
+     "amount": 358000.0,
+     "sector": "오디오물 출판 및 원판 녹음업",
+     "sector_rank": 2,
+     "close": 44750.0,
+     "ret_21": 0.2144,
+     "ret_63": 0.116,
+     "mom_12_1": -0.4832,
+     "near_high": 0.5774,
+     "tv_ratio": 2.63,
+     "tv_surge": 2.44,
+     "breakout": false,
+     "flow_streak": false,
+     "flow_f": -0.0109,
+     "flow_i": 0.0273,
+     "per": 9.4,
+     "pbr": 2.43,
+     "entry": null,
+     "ret": null
+    }
+   ],
+   "sells": [
+    {
+     "code": "020560",
+     "name": "아시아나항공",
+     "type": "stock",
+     "rank": null,
+     "sector": "항공 여객 운송업"
+    }
+   ],
+   "top10": [
+    {
+     "code": "028050",
+     "name": "삼성E&A",
+     "score": 0.783,
+     "sector": "건축기술, 엔지니어링 및 관련 기술 서비스업"
+    },
+    {
+     "code": "122870",
+     "name": "와이지엔터테인먼트",
+     "score": 0.613,
+     "sector": "오디오물 출판 및 원판 녹음업"
+    },
+    {
+     "code": "035900",
+     "name": "JYP Ent.",
+     "score": 0.604,
+     "sector": "오디오물 출판 및 원판 녹음업"
+    },
+    {
+     "code": "041510",
+     "name": "에스엠",
+     "score": 0.579,
+     "sector": "오디오물 출판 및 원판 녹음업"
+    },
+    {
+     "code": "352820",
+     "name": "하이브",
+     "score": 0.546,
+     "sector": "오디오물 출판 및 원판 녹음업"
+    },
+    {
+     "code": "280360",
+     "name": "롯데웰푸드",
+     "score": 0.375,
+     "sector": "기타 식품 제조업"
+    }
+   ],
+   "sectors": [
+    {
+     "sector": "건축기술, 엔지니어링 및 관련 기술 서비스업",
+     "rank": 1,
+     "ret_21": -0.08041874943490784,
+     "foreign_flow": 0.064,
+     "tilt": 0,
+     "n": 4
+    },
+    {
+     "sector": "오디오물 출판 및 원판 녹음업",
+     "rank": 2,
+     "ret_21": 0.12549943883277215,
+     "foreign_flow": 0.003,
+     "tilt": 0,
+     "n": 4
+    },
+    {
+     "sector": "절연선 및 케이블 제조업",
+     "rank": 3,
+     "ret_21": -0.048531143933171095,
+     "foreign_flow": -0.003,
+     "tilt": 0,
+     "n": 4
+    },
+    {
+     "sector": "화학섬유 제조업",
+     "rank": 4,
+     "ret_21": -0.03784860557768921,
+     "foreign_flow": 0.037,
+     "tilt": 0,
+     "n": 3
+    },
+    {
+     "sector": "기타 식품 제조업",
+     "rank": 5,
+     "ret_21": -0.006757499561429181,
+     "foreign_flow": -0.049,
+     "tilt": 0,
+     "n": 6
+    },
+    {
+     "sector": "의약품 제조업",
+     "rank": 6,
+     "ret_21": -0.08483531523845073,
+     "foreign_flow": -0.029,
+     "tilt": 0,
+     "n": 12
+    },
+    {
+     "sector": "전기 통신업",
+     "rank": 7,
+     "ret_21": -0.05353319057815842,
+     "foreign_flow": -0.012,
+     "tilt": 0,
+     "n": 3
+    },
+    {
+     "sector": "1차 철강 제조업",
+     "rank": 8,
+     "ret_21": -0.0018726591760299671,
+     "foreign_flow": -0.029,
+     "tilt": 0,
+     "n": 3
+    },
+    {
+     "sector": "기타 금융업",
+     "rank": 9,
+     "ret_21": -0.054882975027670755,
+     "foreign_flow": -0.016,
+     "tilt": 0,
+     "n": 30
+    },
+    {
+     "sector": "소프트웨어 개발 및 공급업",
+     "rank": 10,
+     "ret_21": -0.042821317977286055,
+     "foreign_flow": 0.009,
+     "tilt": 0,
+     "n": 12
+    },
+    {
+     "sector": "기초 의약물질 제조업",
+     "rank": 11,
+     "ret_21": -0.12903225806451613,
+     "foreign_flow": -0.001,
+     "tilt": 0,
+     "n": 9
+    },
+    {
+     "sector": "자동차 신품 부품 제조업",
+     "rank": 12,
+     "ret_21": -0.030721966205837226,
+     "foreign_flow": 0.004,
+     "tilt": 0,
+     "n": 5
+    }
+   ],
+   "llm_used": false,
+   "equity": 1994486.0,
+   "round_trip": 0.0043,
+   "created_at": "2026-11-24 03:48",
    "entry_date": null,
    "avg": null,
    "kospi": null
   }
  ],
- "updated_at": "2026-11-19 17:27"
+ "updated_at": "2026-11-24 03:47"
 }
