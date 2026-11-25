@@ -10,6 +10,17 @@
    "type": "stock",
    "shares": 11,
    "price": 8720
+  },
+  {
+   "id": "717a64ea-6ff8-4b87-9898-9d13d44fb1a9",
+   "ts": "2026-11-25T00:41:37.676Z",
+   "date": "2026-11-25",
+   "side": "BUY",
+   "code": "035900",
+   "name": "JYP Ent.",
+   "type": "stock",
+   "shares": 1,
+   "price": 44750
   }
  ]
 }
